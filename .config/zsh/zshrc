@@ -1,0 +1,27 @@
+# ENV VARIABLES
+export ZSH="/home/samuel/.oh-my-zsh"
+export EDITOR="/usr/bin/nvim"
+export BROWSER="brave"
+export PATH=$PATH:~/.local/bin
+
+# THEME
+ZSH_THEME="arrow"
+
+# OH MY ZSH
+source $ZSH/oh-my-zsh.sh
+
+# ALIASES
+source ~/.config/zsh/aliases
+
+# PLUGINS
+plugins=(git)
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# NVM
+#export NVM_DIR="$HOME/.nvm"
+#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# TMUX
+[[ $TERM != "screen" ]] && exec tmux -f ~/.config/tmux/tmux.conf

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+### USER ENV VARIALBES ###
+
+### FIX TOUCHPAD ISSUES (TEMP WORKAROUND) ###
+rmmod i2c_hid_acpi &
+modprobe i2c_hid_acpi &
+
+### COMPOSITOR ###
+picom --backend glx --no-fading-openclose &
+
+### WALLPAPER ###
+nitrogen --restore &
+
+### MULTIMONITOR SETUP ###
+xrandr --output eDP --primary --mode 1920x1080 --pos 1920x0 --rotate normal --output HDMI-A-0 --mode 1920x1080 --pos 0x0 --rotate normal &
+
+### KEYBOARD ###
+setxkbmap es &
+
+### APPLETS ###
+nm-applet &
+pasystray &
+cbatticon &
+
+### DWMBLOCKS ###
+dwmblocks &
