@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 ### USER ENV VARIALBES ###
+export _JAVA_AWT_WM_NONREPARENTING=1
+export AWT_TOOLKIT=MToolkit
+export JAVA_HOME=/usr/lib/jvm/default
+wmname LG3D &
 
 ### FIX TOUCHPAD ISSUES (TEMP WORKAROUND) ###
 rmmod i2c_hid_acpi &

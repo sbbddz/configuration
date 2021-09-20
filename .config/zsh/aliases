@@ -6,6 +6,7 @@ alias spr="sudo pacman -Rs"
 alias spu="sudo pacman -Syu"
 alias orphans="sudo pacman -Rs $(pacman -Qdtq)"
 alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n' | sort | tail -100"
+alias updt="sudo pacman -Syu && yay -Syu"
 
 # ALIAS EDITORS
 alias v="nvim"
