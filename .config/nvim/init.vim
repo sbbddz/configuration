@@ -35,9 +35,15 @@ endif
 
 """ PLUGINS
 call plug#begin('~/.vim/plugged')
+""" Fuzzy finder
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
+
+""" Autocomplete
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+""" Appareance
+Plug 'drewtempelmeyer/palenight.vim'
 call plug#end()
 
 """ REMAPS (mode lhs rhs)
@@ -70,3 +76,13 @@ if has('nvim')
 else
     inoremap <silent><expr> <c-@> coc#refresh()
 endif
+
+""" APPEARANCE
+""" True colors
+if (has("termguicolors"))
+    set termguicolors
+endif
+colorscheme palenight
+""" Prevent background color to change 
+hi Normal ctermbg=16 guibg=#000000
+hi LineNr ctermbg=16 guibg=#000000
