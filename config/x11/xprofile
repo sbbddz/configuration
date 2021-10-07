@@ -10,6 +10,9 @@ wmname LG3D &
 rmmod i2c_hid_acpi &
 modprobe i2c_hid_acpi &
 
+### DISABLE PC SPEAKER ###
+rmmod pcspkr
+
 ### COMPOSITOR ###
 picom --backend glx --no-fading-openclose &
 
