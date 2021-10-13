@@ -1,8 +1,7 @@
 """ LEADER
 let mapleader = " "
 
-""" SAVE WITH CONTROL + S
-nnoremap <c-s> :w<cr>
+""" SAVE WITH CONTROL + S nnoremap <c-s> :w<cr>
 onoremap <c-s> :w<cr>
 inoremap <c-s> :w<cr>
 vnoremap <c-s> :w<cr>
@@ -17,17 +16,36 @@ vnoremap <c-c> <esc>
 nnoremap <leader>e :tabedit<Space>
 nnoremap <leader>c :tabclose<cr>
 nnoremap gtf <C-w>gf
-nnoremap <leader>l gt
-nnoremap <leader>h gT
 
-""" FUZZY FINDER
+""" BUFFERS CONTROL
+nnoremap <leader>T :enew<cr> :e 
+nnoremap <A-l> :bnext<cr>
+nnoremap <A-h> :bprevious<cr>
+nnoremap <leader>bq :w<cr>:bp <BAR> bd #<cr>
+nnoremap <leader>bl :ls<cr>
+
+""" WINDOW CONTROL
+nnoremap <leader>l <C-w>l
+nnoremap <leader>h <C-w>h
+
+""" TELECOSPE
 nnoremap <leader>ff :Telescope find_files<cr>
+nnoremap <C-p> :lua require('telescope.builtin').buffers()<CR>
+nnoremap <C-f> :lua require('telescope.builtin').git_files()<CR>
 
 """ COC MAPS
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
+vmap <leader>f <Plug>(coc-format-selected)
+
+command! -nargs=0 Prettier :CocCommand prettier.formatFile
+nmap <leader>bf :Prettier<cr>
 
 """ NERDTREE
-map <leader>nt :NERDTreeFind<CR>
+nnoremap <leader>nt :NERDTreeFind<CR>
+nnoremap <leader>nf :NERDTreeFocus<CR>
+
+""" EASYMOTION
+nmap <leader>s <Plug>(easymotion-s2)

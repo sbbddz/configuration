@@ -3,10 +3,10 @@ set number
 set relativenumber
 set visualbell
 set guicursor=
-set tabstop=4 softtabstop=4
-set shiftwidth=4
+set tabstop=2 softtabstop=2
+set shiftwidth=2
 set expandtab
-set smartindent
+set autoindent
 set noswapfile
 set nobackup
 set scrolloff=8
@@ -22,6 +22,7 @@ set shortmess+=c
 set path+=**
 set wildmenu
 set scrolloff=8
+set showtabline=2
 
 " Always show the signcolumn, otherwise it would shift the text each time
 " diagnostics appear/become resolved.
