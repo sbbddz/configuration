@@ -11,11 +11,12 @@ Plug 'mattn/emmet-vim'
 Plug 'ayu-theme/ayu-vim'
 Plug 'itchyny/lightline.vim'
 Plug 'mengelbrecht/lightline-bufferline'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 """ Syntax Utilities 
 Plug 'windwp/nvim-autopairs'
-Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'lukas-reineke/indent-blankline.nvim'
+Plug 'maxmellon/vim-jsx-pretty'
 
 """ Utilities
 Plug 'vimwiki/vimwiki'

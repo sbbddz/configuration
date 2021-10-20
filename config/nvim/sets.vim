@@ -2,17 +2,20 @@
 set number
 set relativenumber
 set visualbell
-set guicursor=
-set tabstop=2 softtabstop=2
+set tabstop=4 softtabstop=4
+set shiftwidth=4
+set expandtab
+set nosmartindent
+set tabstop=2 
 set shiftwidth=2
 set expandtab
-set autoindent
 set noswapfile
+set smartindent
 set nobackup
 set scrolloff=8
 set mouse=a
 set nowrap
-set nohlsearch
+set hlsearch
 set noerrorbells
 set encoding=utf-8
 set hidden

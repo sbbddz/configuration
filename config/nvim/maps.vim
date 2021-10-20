@@ -39,6 +39,7 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 vmap <leader>f <Plug>(coc-format-selected)
+nmap <leader>f <Plug>(coc-format)
 
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
 nmap <leader>bf :Prettier<cr>
