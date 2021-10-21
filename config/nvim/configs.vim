@@ -16,8 +16,7 @@ nmap <leader>do <Plug>(coc-codeaction)
 if (has("termguicolors"))
   set termguicolors
 endif
-colorscheme ayu 
-let ayucolor="dark"
+colorscheme gruvbox 
 hi Normal ctermbg=16 guibg=#000000
 hi LineNr ctermbg=16 guibg=#000000
 

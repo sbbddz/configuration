@@ -8,10 +8,10 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'mattn/emmet-vim'
 
 """ Appearance
-Plug 'ayu-theme/ayu-vim'
 Plug 'itchyny/lightline.vim'
 Plug 'mengelbrecht/lightline-bufferline'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'morhetz/gruvbox'
 
 """ Syntax Utilities 
 Plug 'windwp/nvim-autopairs'
