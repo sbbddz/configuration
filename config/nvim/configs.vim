@@ -5,18 +5,16 @@ else
   inoremap <silent><expr> <c-@> coc#refresh() 
 endif
 
-set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
-let g:coc_global_extensions = [
-      \ 'coc-tsserver'
-      \ ]
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
-nmap <leader>do <Plug>(coc-codeaction)
+set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
+let g:coc_global_extensions = ['coc-tsserver', 'coc-pyright']
 
 """ COLORSCHEME
 if (has("termguicolors"))
-  set termguicolors
+    set termguicolors
 endif
-colorscheme gruvbox 
+colorscheme palenight
 hi Normal ctermbg=16 guibg=#000000
 hi LineNr ctermbg=16 guibg=#000000
 
@@ -32,7 +30,7 @@ let g:lightline = {
           \ },
           \ }
 
-let g:lightline#bufferline#show_number  = 1
+let g:lightline#bufferline#show_number  = 0
 let g:lightline#bufferline#shorten_path = 0
 let g:lightline#bufferline#unnamed      = '[No Name]'
 let g:lightline#bufferline#clickable    = 1
@@ -58,7 +56,7 @@ let NERDTreeMapOpenInTab='\t'
 
 """ LUA CONFIG
 lua require('nvim-autopairs').setup{}
-lua require('nvimpairs')
+
 
 """ TREE SITTER
 lua require'nvim-treesitter.configs'.setup { indent = { enable = false }, highlight = { enable = true }, incremental_selection = { enable = true }, textobjects = { enable = true }}

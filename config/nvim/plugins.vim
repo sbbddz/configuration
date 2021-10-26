@@ -11,7 +11,7 @@ Plug 'mattn/emmet-vim'
 Plug 'itchyny/lightline.vim'
 Plug 'mengelbrecht/lightline-bufferline'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'morhetz/gruvbox'
+Plug 'drewtempelmeyer/palenight.vim'
 
 """ Syntax Utilities 
 Plug 'windwp/nvim-autopairs'

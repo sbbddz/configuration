@@ -6,11 +6,17 @@ _G.MUtils= {}
 
 MUtils.completion_confirm=function()
   if vim.fn.pumvisible() ~= 0  then
-      return npairs.esc("<cr>")
+    if vim.fn.complete_info()["selected"] ~= -1 then
+      require'completion'.confirmCompletion()
+      return npairs.esc("<c-y>")
+    else
+      vim.api.nvim_select_popupmenu_item(0 , false , false ,{})
+      require'completion'.confirmCompletion()
+      return npairs.esc("<c-n><c-y>")
+    end
   else
     return npairs.autopairs_cr()
   end
 end
-
 
 remap('i' , '<CR>','v:lua.MUtils.completion_confirm()', {expr = true , noremap = true})

@@ -1,7 +1,8 @@
 """ LEADER
 let mapleader = " "
 
-""" SAVE WITH CONTROL + S nnoremap <c-s> :w<cr>
+""" SAVE WITH CONTROL + S 
+nnoremap <c-s> :w<cr>
 onoremap <c-s> :w<cr>
 inoremap <c-s> :w<cr>
 vnoremap <c-s> :w<cr>
@@ -39,10 +40,8 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 vmap <leader>f <Plug>(coc-format-selected)
-nmap <leader>f <Plug>(coc-format)
-
-command! -nargs=0 Prettier :CocCommand prettier.formatFile
-nmap <leader>bf :Prettier<cr>
+nmap <leader>bf <Plug>(coc-format)
+nmap <leader>do <Plug>(coc-codeaction)
 
 """ NERDTREE
 nnoremap <leader>nt :NERDTreeFind<CR>
