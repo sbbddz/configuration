@@ -7,4 +7,3 @@ so ~/.config/nvim/configs.vim
 
 """ VIM KEYBOARD MAPS
 so ~/.config/nvim/maps.vim
-

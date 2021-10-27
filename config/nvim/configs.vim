@@ -8,11 +8,11 @@ endif
 inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
-let g:coc_global_extensions = ['coc-tsserver', 'coc-pyright']
+let g:coc_global_extensions = ['coc-tsserver', 'coc-pyright', 'coc-prettier', 'coc-rust-analyzer', 'coc-go', 'coc-clangd']
 
 """ COLORSCHEME
 if (has("termguicolors"))
-    set termguicolors
+  set termguicolors
 endif
 colorscheme palenight
 hi Normal ctermbg=16 guibg=#000000
@@ -56,7 +56,6 @@ let NERDTreeMapOpenInTab='\t'
 
 """ LUA CONFIG
 lua require('nvim-autopairs').setup{}
-
 
 """ TREE SITTER
 lua require'nvim-treesitter.configs'.setup { indent = { enable = false }, highlight = { enable = true }, incremental_selection = { enable = true }, textobjects = { enable = true }}

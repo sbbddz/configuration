@@ -3,6 +3,7 @@ export ZSH="/home/samuel/.oh-my-zsh"
 export EDITOR="/usr/bin/nvim"
 export BROWSER="brave"
 export PATH=$PATH:~/.local/bin:~/.yarn/bin/
+export GOPATH=$HOME/.go
 
 # THEME
 ZSH_THEME="arrow"
