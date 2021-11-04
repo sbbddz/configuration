@@ -61,4 +61,4 @@ lua require('nvim-autopairs').setup{}
 lua require'nvim-treesitter.configs'.setup { indent = { enable = false }, highlight = { enable = true }, incremental_selection = { enable = true }, textobjects = { enable = true }}
 
 """ FIX PYTHON INDENTATION ERROR
-let g:pyindent_open_paren=0
+""let g:pyindent_open_paren=0

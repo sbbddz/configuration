@@ -18,6 +18,10 @@ Plug 'windwp/nvim-autopairs'
 Plug 'lukas-reineke/indent-blankline.nvim'
 Plug 'maxmellon/vim-jsx-pretty'
 
+""" Lets try polyglot
+let g:polyglot_disabled = ['markdown', 'javascript']
+Plug 'sheerun/vim-polyglot'
+
 """ Utilities
 Plug 'vimwiki/vimwiki'
 Plug 'preservim/nerdtree'

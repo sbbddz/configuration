@@ -5,7 +5,6 @@ set visualbell
 set tabstop=4 softtabstop=4
 set shiftwidth=4
 set expandtab
-set nosmartindent
 set tabstop=2 
 set shiftwidth=2
 set expandtab
@@ -26,6 +25,7 @@ set path+=**
 set wildmenu
 set scrolloff=8
 set showtabline=2
+set nohlsearch
 
 if has("nvim-0.5.0") || has("patch-8.1.1564")
     set signcolumn=number

@@ -10,5 +10,6 @@
         "usePlaceholders": true
       }
     }
-  }
+  },
+  "python.analysis.typeCheckingMode": "off"
 }
