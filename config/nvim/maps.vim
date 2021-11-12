@@ -42,6 +42,7 @@ nmap <silent> gr <Plug>(coc-references)
 vmap <leader>f <Plug>(coc-format-selected)
 nmap <leader>bf <Plug>(coc-format)
 nmap <leader>do <Plug>(coc-codeaction)
+nmap <silent> gc :CocCommand<CR>
 
 """ NERDTREE
 nnoremap <leader>nt :NERDTreeFind<CR>
