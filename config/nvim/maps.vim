@@ -34,15 +34,12 @@ nnoremap <leader>ff :Telescope find_files<cr>
 nnoremap <C-p> :lua require('telescope.builtin').buffers()<CR>
 nnoremap <C-f> :lua require('telescope.builtin').git_files()<CR>
 
-""" COC MAPS
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-vmap <leader>f <Plug>(coc-format-selected)
-nmap <leader>bf <Plug>(coc-format)
-nmap <leader>do <Plug>(coc-codeaction)
-nmap <silent> gc :CocCommand<CR>
+""" LSP MAPS
+nmap <silent> gd :lua vim.lsp.buf.definition()<CR>
+nmap <silent> gi :lua vim.lsp.buf.implementation()<CR>
+nmap <silent> gr :lua vim.lsp.buf.references()<CR>
+nmap <leader>do :lua vim.lsp.buf.code_action()<CR>
+nmap <leader>bf :lua vim.lsp.buf.formatting()<CR>
 
 """ NERDTREE
 nnoremap <leader>nt :NERDTreeFind<CR>

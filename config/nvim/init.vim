@@ -1,8 +1,10 @@
-""" VIM SET VARIABLES
+""" VARIABLES
 so ~/.config/nvim/sets.vim
 
-""" VIM LOAD PLUGINS AND CONFIGS
+""" PLUGINS
 so ~/.config/nvim/plugins.vim
+"
+""" CONFIGS
 so ~/.config/nvim/configs.vim
 
 """ VIM KEYBOARD MAPS
