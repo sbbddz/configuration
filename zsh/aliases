@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# ALIAS EDITORS
+alias v="nvim"
+alias vi="nvim"
+alias vim="nvim"
+alias cat="bat"
+alias vw="nvim -c 'VimwikiIndex'"
+
+alias ls="exa"
+alias l="exa -laG"
+
+# ALIAS DIRECTORYS & FILES
+alias cfvim="cd ~/.config/nvim/ && nvim ."
+alias cfzsh="nvim ~/.config/zsh/zshrc"
+alias cftmux="nvim ~/.config/tmux/tmux.conf"
+alias cfalias="nvim ~/.config/zsh/aliases"
+alias cfscripts="cd ~/.local/bin"
