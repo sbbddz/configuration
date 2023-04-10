@@ -22,7 +22,7 @@ source ~/.config/zsh/aliases
 # FNM
 eval "$(fnm env --use-on-cd)"
 
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+# THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
@@ -31,5 +31,11 @@ ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=blue,underline
 ZSH_HIGHLIGHT_STYLES[precommand]=fg=blue,underline
 ZSH_HIGHLIGHT_STYLES[arg0]=fg=blue
 
-# opam configuration
+# OPAM
 [[ ! -r /Users/samuel/.opam/opam-init/init.zsh ]] || source /Users/samuel/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+
+# DOCKER-DESKTOP
+source /Users/samuel/.docker/init-zsh.sh || true # Added by Docker Desktop
+
+# RBENV
+eval "$(rbenv init - zsh)"
