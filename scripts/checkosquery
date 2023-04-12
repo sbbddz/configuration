@@ -1,0 +1,1 @@
+sudo cat /var/log/osquery/osqueryd.results.log

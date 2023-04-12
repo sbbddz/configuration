@@ -1,0 +1,15 @@
+#!/bin/bash
+
+REPO_DIR="/Users/samuel/Repos/configuration"
+SCRIPTS_DIR=$REPO_DIR/scripts/
+ZSH_DIR=$REPO_DIR/zsh/
+TMUX_DIR=$REPO_DIR/tmux/
+
+cp -r ~/.local/bin/* $SCRIPTS_DIR
+echo "Updated scripts"
+
+cp -r ~/.config/zsh/* $ZSH_DIR
+echo "Updated zsh"
+
+cp -r ~/.config/tmux/* $TMUX_DIR
+echo "Updated tmux"
