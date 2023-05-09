@@ -4,6 +4,7 @@ export EDITOR="/opt/homebrew/bin/nvim"
 export PATH=$PATH:~/.local/bin:~/.yarn/bin/
 export GOPATH=$HOME/.go
 export PROMPT_EOL_MARK=''
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 # THEME
 ZSH_THEME="arrow"
