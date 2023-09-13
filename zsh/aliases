@@ -7,8 +7,8 @@ alias vim="nvim"
 alias cat="bat"
 alias vw="nvim -c 'VimwikiIndex'"
 
-alias ls="exa"
-alias l="exa -laG"
+alias ls="eza"
+alias l="eza -laG"
 
 # ALIAS DIRECTORYS & FILES
 alias cfvim="cd ~/.config/nvim/ && nvim ."
