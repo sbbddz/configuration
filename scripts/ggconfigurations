@@ -13,3 +13,6 @@ echo "Updated zsh"
 
 cp -r ~/.config/tmux/* $TMUX_DIR
 echo "Updated tmux"
+
+git -C $REPO_DIR commit -a && git -C $REPO_DIR push origin || echo "Something went horribly wrong"
+

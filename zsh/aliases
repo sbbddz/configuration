@@ -5,16 +5,32 @@ alias v="nvim"
 alias vi="nvim"
 alias vim="nvim"
 alias cat="bat"
-alias vw="nvim -c 'VimwikiIndex'"
 
 alias ls="eza"
 alias l="eza -laG"
 
 # ALIAS DIRECTORYS & FILES
 alias cfvim="cd ~/.config/nvim/ && nvim ."
-alias cfzsh="nvim ~/.config/zsh/zshrc"
+alias cfzsh="nvim ~/.config/zsh/zshrc && . ~/.zshrc"
 alias cftmux="nvim ~/.config/tmux/tmux.conf"
-alias cfalias="nvim ~/.config/zsh/aliases"
+alias cfalias="nvim ~/.config/zsh/aliases && . ~/.zshrc"
 alias cfscripts="cd ~/.local/bin"
-alias cfnotes="nvim ~/Repos/notes-til/"
-alias cficloud="cd \"/Users/$(echo $USER)/Library/Mobile Documents/com~apple~CloudDocs\""
+
+listalias () {
+	echo "----- ALIAS"
+	echo "cfvim: Open vim configuration"
+	echo "cfzsh: Open zsh configuration"
+	echo "cftmux: Open tmux configuration"
+	echo "cfalias: Open aliases configuration"
+	echo "cfscripts: Open scripts configuration"
+
+	echo "----- SCRIPTS"
+	echo $(ls -a ~/.local/bin)
+}
+
+if uname -s | grep -q Darwin ; then
+	alias cficloud="cd \"/Users/$(echo $USER)/Library/Mobile Documents/com~apple~CloudDocs\""
+	alias cfnotes="open -a Notes"
+else
+	alias cfnotes="nvim ~/.notes/"
+fi
