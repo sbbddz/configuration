@@ -1,1 +1,3 @@
 sudo cat /var/log/osquery/osqueryd.results.log
+
+pgrep "osqueryd" && echo "osquery is running correctly\n$(ps aux | grep "osqueryd")" || "osquery doesn't appear to be running"
