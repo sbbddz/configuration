@@ -16,6 +16,10 @@ alias cftmux="nvim ~/.config/tmux/tmux.conf"
 alias cfalias="nvim ~/.config/zsh/aliases && . ~/.zshrc"
 alias cfscripts="cd ~/.local/bin"
 
+cfhelp () {
+	listalias
+}
+
 listalias () {
 	echo "----- ALIAS"
 	echo "cfvim: Open vim configuration"
