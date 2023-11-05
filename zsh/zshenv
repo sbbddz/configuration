@@ -13,3 +13,6 @@ else
     fi
 fi
 unset __conda_setup
+
+export DENO_INSTALL="/Users/samuel/.deno"
+export PATH="$DENO_INSTALL/bin:$PATH"
