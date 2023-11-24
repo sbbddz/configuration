@@ -41,3 +41,8 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 
 # RBENV
 eval "$(rbenv init - zsh)"
+
+# GOTO
+goto() {
+	cd $(find /Users/samuel/Code /Users/samuel/Desktop /Users/samuel/Documents /Users/samuel/Downloads /Users/samuel/Repos /Users/samuel/.config /Users/samuel/.local -type d -maxdepth 5 -mindepth 1 | fzf)
+}
