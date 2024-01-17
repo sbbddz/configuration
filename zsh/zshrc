@@ -9,6 +9,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 export ANDROID_HOME=/Users/samuel/Library/Android/sdk
 export DENO_INSTALL="/Users/samuel/.deno"
+
 ## PATH
 export PATH=$PATH:~/.local/bin:~/.yarn/bin/:/usr/local/
 export PATH=/Users/samuel/Library/Android/sdk/platform-tools:$PATH
@@ -17,6 +18,7 @@ export PATH="$DENO_INSTALL/bin:$PATH"
 ################
 # ==== OH-MY-ZSH
 ################
+
 export ZSH_THEME="arrow"
 source $ZSH/oh-my-zsh.sh 
 plugins=(git) 
@@ -24,39 +26,37 @@ plugins=(git)
 ################
 # ==== SOURCES
 ################
+
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-## SCRIPTS
-source ~/.config/zsh/aliases
 
 ################
 # ==== DEV ENVIRONMENTS
 ################
+
 ## RUBY (RBENV)
 eval "$(rbenv init - zsh)"
+
 ## DOCKER
 # source /Users/samuel/.docker/init-zsh.sh || true # Added by Docker Desktop
+
 ## OCAML (OPAM)
 [[ ! -r /Users/samuel/.opam/opam-init/init.zsh ]] || source /Users/samuel/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+
 ## JAVA (SDKMAN)
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
 ## JAVASCRIPT (FNM)
 eval "$(fnm env --use-on-cd)"
+
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
 
 ################
 # ==== FUNCTIONS
 ################
-goto() {
-	cd $(find /Users/samuel/Code /Users/samuel/Desktop /Users/samuel/Documents /Users/samuel/Downloads /Users/samuel/Repos /Users/samuel/.config /Users/samuel/.local -type d -maxdepth 5 -mindepth 1 | fzf)
-}
 
-cfhelp () {
-	listalias
-}
-
-listalias () {
+cfhelp() {
 	echo "----- ALIAS"
 	echo "cfvim: Open vim configuration"
 	echo "cfzsh: Open zsh configuration"
@@ -68,23 +68,35 @@ listalias () {
 	echo $(ls -a ~/.local/bin)
 }
 
+n() {
+	if ! [ -x "$(command -v fd)" ]; then
+		cd "$(find "${HOME}" -type d | fzf)"
+	else
+		cd "$(fd . "${HOME}" "${HOME}/Library/Mobile Documents/com~apple~CloudDocs" --exclude '/Library/' --type d --color never | fzf)"
+	fi
+}
+
 ################
 # ==== ALIAS
 ################
+
 ## EDITORS
 alias v="nvim"
 alias vi="nvim"
 alias vim="nvim"
 alias cat="bat"
+
 ## LS
 alias ls="eza"
 alias l="eza -laG"
+
 ## DIRS & FILES
 alias cfvim="cd ~/.config/nvim/ && nvim ."
 alias cfzsh="nvim ~/.config/zsh/zshrc && . ~/.zshrc"
 alias cftmux="nvim ~/.config/tmux/tmux.conf"
 alias cfalias="nvim ~/.config/zsh/aliases && . ~/.zshrc"
 alias cfscripts="cd ~/.local/bin"
+
 ## OS SPECIFIC
 if uname -s | grep -q Darwin ; then
 	alias cficloud="cd \"/Users/$(echo $USER)/Library/Mobile Documents/com~apple~CloudDocs\""
