@@ -1,13 +1,12 @@
 ################
 # ==== EXPORTS
 ################
+
 export ZSH="$HOME/.oh-my-zsh"
 export EDITOR="/opt/homebrew/bin/nvim"
-export GOPATH=$HOME/.go
 export PROMPT_EOL_MARK=''
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 export ANDROID_HOME=/Users/samuel/Library/Android/sdk
-export DENO_INSTALL="/Users/samuel/.deno"
 
 ## PATH
 export PATH=$PATH:~/.local/bin:~/.yarn/bin/:/usr/local/
@@ -29,6 +28,24 @@ plugins=(git)
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 ################
+# ==== HISTORY CONFIG
+################
+# See: https://registerspill.thorstenball.com/p/which-command-did-you-run-1731-days
+
+export HISTFILE=$HOME/.zsh_history
+export HISTSIZE=50000
+export SAVEHIST=50000
+
+setopt INC_APPEND_HISTORY
+setopt EXTENDED_HISTORY
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt HIST_SAVE_NO_DUPS
+setopt SHARE_HISTORY
+
+################
 # ==== DEV ENVIRONMENTS
 ################
 
@@ -48,6 +65,9 @@ export SDKMAN_DIR="$HOME/.sdkman"
 ## JAVASCRIPT (FNM)
 eval "$(fnm env --use-on-cd)"
 
+## TYPESCRIPT / JAVASCRIPT (DENO)
+export DENO_INSTALL="/Users/samuel/.deno"
+
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
 
@@ -55,6 +75,9 @@ eval "$(fnm env --use-on-cd)"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_ROOT=~/.dotnet
 export PATH=$PATH:~/.dotnet
+
+# GO
+export GOPATH=$HOME/.go
 
 ################
 # ==== FUNCTIONS
@@ -78,6 +101,16 @@ n() {
 	else
 		cd "$(fd . "${HOME}" "${HOME}/Library/Mobile Documents/com~apple~CloudDocs" --exclude '/Library/' --type d --color never | fzf)"
 	fi
+}
+
+colors() {
+	for i in {0..255}; do
+		printf "\x1b[38;5;${i}mcolour${i}\x1b[0m\n"
+	done
+}
+
+hist() {
+	cat ~/.zsh_history | awk -F ';' '{ $1=$2; print }' | fzf
 }
 
 ################
