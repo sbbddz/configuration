@@ -5,7 +5,6 @@ export ZSH="$HOME/.oh-my-zsh"
 export EDITOR="/opt/homebrew/bin/nvim"
 export GOPATH=$HOME/.go
 export PROMPT_EOL_MARK=''
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 export ANDROID_HOME=/Users/samuel/Library/Android/sdk
 export DENO_INSTALL="/Users/samuel/.deno"
@@ -51,6 +50,11 @@ eval "$(fnm env --use-on-cd)"
 
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
+
+## C# DOTNET (DOTNET CLI)
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export DOTNET_ROOT=~/.dotnet
+export PATH=$PATH:~/.dotnet
 
 ################
 # ==== FUNCTIONS
