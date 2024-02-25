@@ -3,7 +3,7 @@
 ################
 
 export ZSH="$HOME/.oh-my-zsh"
-export EDITOR="/opt/homebrew/bin/nvim"
+export EDITOR=$(which nvim)
 export PROMPT_EOL_MARK=''
 export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 export ANDROID_HOME=/Users/samuel/Library/Android/sdk
@@ -97,7 +97,7 @@ cfhelp() {
 
 n() {
 	if ! [ -x "$(command -v fd)" ]; then
-		cd "$(find "${HOME}" -type d | fzf)"
+		cd "$(find "${HOME}" -type d -not -path '*/.*' | fzf)"
 	else
 		cd "$(fd . "${HOME}" "${HOME}/Library/Mobile Documents/com~apple~CloudDocs" --exclude '/Library/' --type d --color never | fzf)"
 	fi
@@ -111,6 +111,20 @@ colors() {
 
 hist() {
 	cat ~/.zsh_history | awk -F ';' '{ $1=$2; print }' | fzf
+}
+
+edit() {
+	fzf | xargs nvim
+}
+
+cheat() {
+	curl cheat.sh/$1
+}
+
+ide() {
+	if [ -n "$TMUX" ]; then
+		tmux split-window -v -l 23%
+	fi
 }
 
 ################
