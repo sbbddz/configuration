@@ -33,8 +33,8 @@ source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 # See: https://registerspill.thorstenball.com/p/which-command-did-you-run-1731-days
 
 export HISTFILE=$HOME/.zsh_history
-export HISTSIZE=50000
-export SAVEHIST=50000
+HISTSIZE=10000000
+SAVEHIST=10000000
 
 setopt INC_APPEND_HISTORY
 setopt EXTENDED_HISTORY
@@ -80,6 +80,11 @@ export PATH=$PATH:~/.dotnet
 export GOPATH=$HOME/.go
 
 ################
+# ==== EXTENSIONS
+################
+eval "$(zoxide init zsh)"
+
+################
 # ==== FUNCTIONS
 ################
 
@@ -121,12 +126,6 @@ cheat() {
 	curl cheat.sh/$1
 }
 
-ide() {
-	if [ -n "$TMUX" ]; then
-		tmux split-window -v -l 23%
-	fi
-}
-
 ################
 # ==== ALIAS
 ################
@@ -140,6 +139,9 @@ alias cat="bat"
 ## LS
 alias ls="eza"
 alias l="eza -laG"
+
+## Zoxide
+alias cd="z"
 
 ## DIRS & FILES
 alias cfvim="cd ~/.config/nvim/ && nvim ."
