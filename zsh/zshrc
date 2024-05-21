@@ -10,8 +10,7 @@ export ANDROID_HOME=/Users/samuel/Library/Android/sdk
 
 ## PATH
 export PATH=$PATH:~/.local/bin:~/.yarn/bin/:/usr/local/
-export PATH=/Users/samuel/Library/Android/sdk/platform-tools:$PATH
-export PATH="$DENO_INSTALL/bin:$PATH"
+export PATH=$PATH:/Users/samuel/Library/Android/sdk/platform-tools
 
 ################
 # ==== OH-MY-ZSH
@@ -67,6 +66,7 @@ eval "$(fnm env --use-on-cd)"
 
 ## TYPESCRIPT / JAVASCRIPT (DENO)
 export DENO_INSTALL="/Users/samuel/.deno"
+export PATH=$PATH:$DENO_INSTALL/bin
 
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
