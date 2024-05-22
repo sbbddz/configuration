@@ -43,26 +43,22 @@ config.hide_tab_bar_if_only_one_tab = true
 config.enable_tab_bar = false
 
 -- DISABLE DEFAULT KEYBINDINGS
-config.disable_default_key_bindings = true
 config.keys = {
 	{
-		key = '+',
+		key = 't',
 		mods = 'SUPER',
-		action = wezterm.action.IncreaseFontSize
+		action = wezterm.action.DisableDefaultAssignment
 	},
-	{
-		key = '-',
-		mods = 'SUPER',
-		action = wezterm.action.DecreaseFontSize
-	},
-	{
-		key = 'r',
-		mods = 'SUPER|SHIFT',
-		action = wezterm.action.ReloadConfiguration
-	}
 }
 
 -- WINDOW PADDINGS
 config.window_padding = { left = 1, right = 1, top = 1, bottom = 1 }
+
+-- USE WSL IN WINDOWS AND TABS FOR CMD/PWSH
+if wezterm.target_triple == 'x86_64-pc-windows-msvc' then
+	config.default_domain = 'WSL:Ubuntu'
+	config.use_fancy_tab_bar = false
+	config.enable_tab_bar = true
+end
 
 return config
