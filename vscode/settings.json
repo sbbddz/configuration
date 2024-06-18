@@ -1,0 +1,166 @@
+{
+    "editor.fontFamily": "'Iosevka Nerd Font Mono', Menlo, Monaco, 'Courier New', monospace",
+    "editor.fontSize": 20,
+    "editor.bracketPairColorization.enabled": false,
+    "terminal.integrated.fontFamily": "'Iosevka Nerd Font Mono', Menlo, Monaco, 'Courier New', monospace",
+    "terminal.integrated.fontSize": 20,
+    "workbench.editor.showTabs": "none",
+    "vim.incsearch": true,
+    "vim.leader": "<space>",
+    "vim.normalModeKeyBindings": [
+        // TELESCOPE
+        {
+            "before": [
+                "<leader>",
+                "f",
+                "f"
+            ],
+            "commands": [
+                "workbench.action.quickOpen"
+            ]
+        },
+        {
+            "before": [
+                "<leader>",
+                "f",
+                "p"
+            ],
+            "commands": [
+                "workbench.action.findInFiles"
+            ]
+        },
+        // MOVING AROUND
+        {
+            "before": [
+                "<S-Tab>"
+            ],
+            "after": [
+                "<C-o>"
+            ]
+        },
+        {
+            "before": [
+                "<Tab>"
+            ],
+            "after": [
+                "<C-i>"
+            ]
+        },
+        {
+            "before": [
+                "<C-c>"
+            ],
+            "after": [
+                "<ESC>"
+            ]
+        },
+        {
+            "before": [
+                "<leader>",
+                "b",
+                "q"
+            ],
+            "commands": [
+                "workbench.action.files.save",
+                "workbench.action.closeActiveEditor"
+            ]
+        },
+        {
+            "before": [
+                "<leader>",
+                "n",
+                "t"
+            ],
+            "commands": [
+                "workbench.view.explorer"
+            ]
+        },
+        // LSP 
+        {
+            "before": [
+                "K",
+            ],
+            "commands": [
+                "editor.action.showHover"
+            ]
+        },
+        {
+            "before": [
+                "g",
+                "a"
+            ],
+            "commands": [
+                "editor.action.quickFix"
+            ]
+        },
+        {
+            "before": [
+                "g",
+                "i"
+            ],
+            "commands": [
+                "editor.action.goToImplementation"
+            ]
+        },
+        {
+            "before": [
+                "g",
+                "e"
+            ],
+            "commands": [
+                "editor.action.goToReferences"
+            ]
+        },
+        {
+            "before": [
+                "g",
+                "r"
+            ],
+            "commands": [
+                "editor.action.rename"
+            ]
+        },
+        {
+            "before": [
+                "g",
+                "k"
+            ],
+            "commands": [
+                "editor.action.marker.prev"
+            ]
+        },
+        {
+            "before": [
+                "g",
+                "j"
+            ],
+            "commands": [
+                "editor.action.marker.next"
+            ]
+        },
+        {
+            "before": [
+                "<leader>",
+                "b",
+                "f"
+            ],
+            "commands": [
+                "editor.action.formatDocument"
+            ]
+        },
+        // SPLITS
+        {
+            "before": [
+                "<leader>",
+                "v",
+                "s"
+            ],
+            "commands": [
+                "workbench.action.splitEditorRight"
+            ]
+        }
+    ],
+    "vim.handleKeys": {
+        "<C-t>": false,
+    },
+}
