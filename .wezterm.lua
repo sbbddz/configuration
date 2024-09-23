@@ -35,30 +35,52 @@ config.colors = {
 
 -- FONT
 config.font = wezterm.font('Iosevka Nerd Font Mono', { weight = 'Medium' })
-config.font_size = 24
+config.font_size = 18
 
 -- TABS
 config.use_fancy_tab_bar = false
 config.hide_tab_bar_if_only_one_tab = true
 config.enable_tab_bar = false
 
--- DISABLE DEFAULT KEYBINDINGS
-config.keys = {
-	{
-		key = 't',
-		mods = 'SUPER',
-		action = wezterm.action.DisableDefaultAssignment
-	},
-}
-
 -- WINDOW PADDINGS
 config.window_padding = { left = 1, right = 1, top = 1, bottom = 1 }
 
 -- USE WSL IN WINDOWS AND TABS FOR CMD/PWSH
 if wezterm.target_triple == 'x86_64-pc-windows-msvc' then
-	config.default_domain = 'WSL:Ubuntu'
 	config.use_fancy_tab_bar = false
+	config.default_domain = "WSL:Ubuntu"
 	config.enable_tab_bar = true
+	config.hide_tab_bar_if_only_one_tab = false
+	config.launch_menu = {
+		{
+			label = "wsl",
+			args = { "wsl.exe" },
+			domain = { DomainName = "local" },
+		},
+		{
+			label = "pwsh",
+			args = { "C:\\Program Files\\PowerShell\\7\\pwsh.exe", "-nologo" },
+			domain = { DomainName = "local" },
+		}
+	}
+	
+	-- Enable CTRL+T in windows
+	config.keys = {
+		{
+			key = 't',
+			mods = 'CTRL',
+			action = wezterm.action.ShowLauncher
+		},
+	}
+else
+	-- DISABLE DEFAULT KEYBINDINGS
+	config.keys = {
+		{
+			key = 't',
+			mods = 'SUPER',
+			action = wezterm.action.DisableDefaultAssignment
+		},
+	}
 end
 
 return config
