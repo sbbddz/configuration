@@ -34,7 +34,7 @@ config.colors = {
 }
 
 -- FONT
-config.font = wezterm.font('Iosevka Nerd Font Mono', { weight = 'Medium' })
+config.font = wezterm.font('Iosevka Nerd Font', { weight = 'Medium' })
 config.font_size = 18
 
 -- TABS
