@@ -11,6 +11,7 @@ export ANDROID_HOME=/Users/samuel/Library/Android/sdk
 ## PATH
 export PATH=$PATH:~/.local/bin:~/.yarn/bin/:/usr/local/
 export PATH=$PATH:/Users/samuel/Library/Android/sdk/platform-tools
+export PATH=/opt/homebrew/opt/llvm/bin:$PATH # use llvm path from homebrew
 
 ################
 # ==== OH-MY-ZSH
@@ -67,6 +68,7 @@ eval "$(fnm env --use-on-cd)"
 ## TYPESCRIPT / JAVASCRIPT (DENO)
 export DENO_INSTALL="/Users/samuel/.deno"
 export PATH=$PATH:$DENO_INSTALL/bin
+. "/Users/samuel/.deno/env"
 
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
