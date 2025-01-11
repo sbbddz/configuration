@@ -73,6 +73,9 @@ export PATH=$PATH:$DENO_INSTALL/bin
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
 
+## HASKELL (GHC)
+[ -f "/Users/samuel/.ghcup/env" ] && . "/Users/samuel/.ghcup/env" # ghcup-env
+
 ## C# DOTNET (DOTNET CLI)
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_ROOT=~/.dotnet
