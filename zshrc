@@ -1,11 +1,29 @@
 ################
+# ==== PROMPT
+################
+
+autoload -Uz vcs_info
+zstyle ':vcs_info:git*' formats " %F{blue}%b%f %m%u%c %a "
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' stagedstr ' %F{green}✚%f'
+zstyle ':vcs_info:*' unstagedstr ' %F{red}●%f'
+setopt prompt_subst
+precmd() {
+	vcs_info
+}
+if [ $UID -eq 0 ]; then NCOLOR="red"; else NCOLOR="blue"; fi
+PROMPT='%B%F{$NCOLOR}%n%b %F{white}%1~ :  %{$reset_color%}%b'
+RPROMPT='${vcs_info_msg_0_}'
+bindkey '^A' beginning-of-line
+bindkey '^E' end-of-line
+
+################
 # ==== EXPORTS
 ################
 
-export ZSH="$HOME/.oh-my-zsh"
 export EDITOR=$(which nvim)
 export PROMPT_EOL_MARK=''
-export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 export ANDROID_HOME=/Users/samuel/Library/Android/sdk
 
 ## PATH
@@ -14,17 +32,10 @@ export PATH=$PATH:/Users/samuel/Library/Android/sdk/platform-tools
 export PATH=/opt/homebrew/opt/llvm/bin:$PATH # use llvm path from homebrew
 
 ################
-# ==== OH-MY-ZSH
-################
-
-export ZSH_THEME="arrow"
-source $ZSH/oh-my-zsh.sh 
-plugins=(git) 
-
-################
 # ==== SOURCES
 ################
 
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 ################
@@ -100,7 +111,6 @@ cfhelp() {
 	echo "cfvim: Open vim configuration"
 	echo "cfzsh: Open zsh configuration"
 	echo "cftmux: Open tmux configuration"
-	echo "cfalias: Open aliases configuration"
 	echo "cfscripts: Open scripts configuration"
 
 	echo "----- SCRIPTS"
