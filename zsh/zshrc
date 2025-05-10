@@ -1,11 +1,29 @@
 ################
+# ==== PROMPT
+################
+
+autoload -Uz vcs_info
+zstyle ':vcs_info:git*' formats " %F{blue}%b%f %m%u%c %a "
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' stagedstr ' %F{green}✚%f'
+zstyle ':vcs_info:*' unstagedstr ' %F{red}●%f'
+setopt prompt_subst
+precmd() {
+	vcs_info
+}
+if [ $UID -eq 0 ]; then NCOLOR="red"; else NCOLOR="blue"; fi
+PROMPT='%B%F{$NCOLOR}%n%b %F{white}%1~ :  %{$reset_color%}%b'
+RPROMPT='${vcs_info_msg_0_}'
+bindkey '^A' beginning-of-line
+bindkey '^E' end-of-line
+
+################
 # ==== EXPORTS
 ################
 
-export ZSH="$HOME/.oh-my-zsh"
 export EDITOR=$(which nvim)
 export PROMPT_EOL_MARK=''
-export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 export ANDROID_HOME=/Users/samuel/Library/Android/sdk
 
 ## PATH
@@ -14,17 +32,10 @@ export PATH=$PATH:/Users/samuel/Library/Android/sdk/platform-tools
 export PATH=/opt/homebrew/opt/llvm/bin:$PATH # use llvm path from homebrew
 
 ################
-# ==== OH-MY-ZSH
-################
-
-export ZSH_THEME="arrow"
-source $ZSH/oh-my-zsh.sh 
-plugins=(git) 
-
-################
 # ==== SOURCES
 ################
 
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#787878"
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 ################
@@ -49,9 +60,6 @@ setopt SHARE_HISTORY
 # ==== DEV ENVIRONMENTS
 ################
 
-## RUBY (RBENV)
-eval "$(rbenv init - zsh)"
-
 ## DOCKER
 # source /Users/samuel/.docker/init-zsh.sh || true # Added by Docker Desktop
 
@@ -62,13 +70,15 @@ eval "$(rbenv init - zsh)"
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-## JAVASCRIPT (FNM)
-eval "$(fnm env --use-on-cd)"
-
 ## TYPESCRIPT / JAVASCRIPT (DENO)
 export DENO_INSTALL="/Users/samuel/.deno"
 export PATH=$PATH:$DENO_INSTALL/bin
 . "/Users/samuel/.deno/env"
+
+## TYPESCRIPT / JAVASCRIPT (BUN)
+[ -s "/Users/samuel/.bun/_bun" ] && source "/Users/samuel/.bun/_bun"
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
@@ -85,6 +95,13 @@ export PATH=$PATH:~/.dotnet
 export GOPATH=$HOME/.go
 export PATH=$PATH:$GOPATH/bin
 
+# MISE (ruby, js)
+eval "$(~/.local/bin/mise activate)"
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+
+# AIDER
+AIDER_MODEL=anthropic/claude-3-5-sonnet-latest
+
 ################
 # ==== EXTENSIONS
 ################
@@ -99,7 +116,6 @@ cfhelp() {
 	echo "cfvim: Open vim configuration"
 	echo "cfzsh: Open zsh configuration"
 	echo "cftmux: Open tmux configuration"
-	echo "cfalias: Open aliases configuration"
 	echo "cfscripts: Open scripts configuration"
 
 	echo "----- SCRIPTS"
@@ -163,3 +179,4 @@ if uname -s | grep -q Darwin ; then
 else
 	alias cfnotes="nvim ~/.notes/"
 fi
+
