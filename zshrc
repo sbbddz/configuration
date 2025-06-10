@@ -70,13 +70,15 @@ setopt SHARE_HISTORY
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-## JAVASCRIPT (FNM)
-eval "$(fnm env --use-on-cd)"
-
 ## TYPESCRIPT / JAVASCRIPT (DENO)
 export DENO_INSTALL="/Users/samuel/.deno"
 export PATH=$PATH:$DENO_INSTALL/bin
 . "/Users/samuel/.deno/env"
+
+## TYPESCRIPT / JAVASCRIPT (BUN)
+[ -s "/Users/samuel/.bun/_bun" ] && source "/Users/samuel/.bun/_bun"
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
 ## RUST (CARGO)
 . "$HOME/.cargo/env"
@@ -93,9 +95,12 @@ export PATH=$PATH:~/.dotnet
 export GOPATH=$HOME/.go
 export PATH=$PATH:$GOPATH/bin
 
-# MISE (right now, ruby)
+# MISE (ruby, js)
 eval "$(~/.local/bin/mise activate)"
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+
+# OPENCODE
+export PATH=/Users/samuel/.opencode/bin:$PATH
 
 ################
 # ==== EXTENSIONS
@@ -174,3 +179,4 @@ if uname -s | grep -q Darwin ; then
 else
 	alias cfnotes="nvim ~/.notes/"
 fi
+
