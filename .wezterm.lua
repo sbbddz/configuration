@@ -34,8 +34,8 @@ config.colors = {
 }
 
 -- FONT
-config.font = wezterm.font('Iosevka Nerd Font', { weight = 'Medium' })
-config.font_size = 18
+config.font = wezterm.font('Iosevka Nerd Font Mono', { weight = 'Regular' })
+config.font_size = 24
 
 -- TABS
 config.use_fancy_tab_bar = false
