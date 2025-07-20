@@ -1,6 +1,6 @@
 cursor-style = block
 shell-integration-features = no-cursor
-macos-option-as-alt = true
+macos-option-as-alt = left
 foreground = ececec
 background = 191919
 font-family = Iosevka Nerd Font Mono
