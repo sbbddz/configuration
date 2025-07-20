@@ -1,0 +1,27 @@
+cursor-style = block
+shell-integration-features = no-cursor
+macos-option-as-alt = true
+foreground = ececec
+background = 191919
+font-family = Iosevka Nerd Font Mono
+font-size = 24
+cursor-color = c0caf5
+cursor-text = 1a1b26
+selection-foreground = 33467c
+selection-background = c0caf5
+palette = 0=191919
+palette = 1=f7768e
+palette = 2=9ece6a
+palette = 3=e0af68
+palette = 4=7aa2f7
+palette = 5=bb9af7
+palette = 6=7dcfff
+palette = 7=ececec
+palette = 8=191919
+palette = 9=f7768e
+palette = 10=9ece6a
+palette = 11=e0af68
+palette = 12=7aa2f7
+palette = 13=bb9af7
+palette = 14=7dcfff
+palette = 15=ececec
