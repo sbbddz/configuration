@@ -1,0 +1,29 @@
+#!/bin/bash
+# ================================================================================== 
+# After upgrading to a new version of macOS we notice the log directory does 
+# not exist. To fix it we are automating the check, and then creating the directory
+# 1 - The log directory does not exist. 
+# Each if block should be able to safely determine what needs to be fixed. 
+# Each portion of the block appends to a log file in /var/log/osq_fix.log
+# ==================================================================================
+
+
+# Confirms Root is running this script.
+if [ "$EUID" -ne 0 ]
+  then echo "[!] Please run as root"
+  exit
+fi
+
+# Some variables
+LOGFILE='/var/log/osq_fix.log'
+OSQDIR='/var/log/osquery'
+
+
+# If block for log directory existing
+if [ ! -d "$OSQDIR" ]
+    then
+        /bin/mkdir -p "$OSQDIR"
+        echo "$(date +"%Y-%m-%d_%H-%M-%S")"  Created "$OSQDIR" directory.  >> "$LOGFILE"
+else
+    echo "$(date +"%Y-%m-%d_%H-%M-%S")" directory already exists. >> "$LOGFILE"
+fi
