@@ -63,30 +63,15 @@ setopt SHARE_HISTORY
 ## DOCKER
 # source /Users/samuel/.docker/init-zsh.sh || true # Added by Docker Desktop
 
-## OCAML (OPAM)
-[[ ! -r /Users/samuel/.opam/opam-init/init.zsh ]] || source /Users/samuel/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
-
-## JAVA (SDKMAN)
-export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-
-## TYPESCRIPT / JAVASCRIPT (DENO)
-export DENO_INSTALL="/Users/samuel/.deno"
-export PATH=$PATH:$DENO_INSTALL/bin
-. "/Users/samuel/.deno/env"
-
-## TYPESCRIPT / JAVASCRIPT (BUN)
+## BUN
 [ -s "/Users/samuel/.bun/_bun" ] && source "/Users/samuel/.bun/_bun"
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-## RUST (CARGO)
+## CARGO
 . "$HOME/.cargo/env"
 
-## HASKELL (GHC)
-[ -f "/Users/samuel/.ghcup/env" ] && . "/Users/samuel/.ghcup/env" # ghcup-env
-
-## C# DOTNET (DOTNET CLI)
+## DOTNET
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_ROOT=~/.dotnet
 export PATH=$PATH:~/.dotnet
@@ -95,12 +80,12 @@ export PATH=$PATH:~/.dotnet
 export GOPATH=$HOME/.go
 export PATH=$PATH:$GOPATH/bin
 
-# MISE (ruby, js)
+# MISE (ruby, node)
 eval "$(~/.local/bin/mise activate)"
 export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 
-# AIDER
-AIDER_MODEL=anthropic/claude-3-5-sonnet-latest
+# OPENCODE
+export PATH=/Users/samuel/.opencode/bin:$PATH
 
 ################
 # ==== EXTENSIONS
@@ -110,17 +95,6 @@ eval "$(zoxide init zsh)"
 ################
 # ==== FUNCTIONS
 ################
-
-cfhelp() {
-	echo "----- ALIAS"
-	echo "cfvim: Open vim configuration"
-	echo "cfzsh: Open zsh configuration"
-	echo "cftmux: Open tmux configuration"
-	echo "cfscripts: Open scripts configuration"
-
-	echo "----- SCRIPTS"
-	echo $(ls -a ~/.local/bin)
-}
 
 n() {
 	if ! [ -x "$(command -v fd)" ]; then
@@ -156,27 +130,30 @@ cheat() {
 alias v="nvim"
 alias vi="nvim"
 alias vim="nvim"
+alias rawvim="/usr/bin/vim"
 alias cat="bat"
 
 ## LS
 alias ls="eza"
 alias l="eza -laG"
 
-## Zoxide
+## ZOXIDE
 alias cd="z"
 
 ## DIRS & FILES
 alias cfvim="cd ~/.config/nvim/ && nvim ."
 alias cfzsh="nvim ~/.config/zsh/zshrc && . ~/.zshrc"
 alias cftmux="nvim ~/.config/tmux/tmux.conf"
-alias cfalias="nvim ~/.config/zsh/aliases && . ~/.zshrc"
 alias cfscripts="cd ~/.local/bin"
+
+## WORK
+alias ocwork="opencode -m amazon-bedrock/anthropic.claude-sonnet-4-5-20250929-v1:0"
+alias ocw=ocwork
 
 ## OS SPECIFIC
 if uname -s | grep -q Darwin ; then
 	alias cficloud="cd \"/Users/$(echo $USER)/Library/Mobile Documents/com~apple~CloudDocs\""
-	alias cfnotes="open -a Notes"
-else
-	alias cfnotes="nvim ~/.notes/"
 fi
 
+## MISC
+alias oc="opencode"
