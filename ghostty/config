@@ -1,27 +1,28 @@
 cursor-style = block
+macos-icon=xray
 shell-integration-features = no-cursor
 macos-option-as-alt = left
 foreground = ececec
-background = 191919
-font-family = Iosevka Nerd Font Mono
-font-size = 24
+background = 000000
+font-family = M+1Code Nerd Font
+font-size = 22
 cursor-color = c0caf5
 cursor-text = 1a1b26
 selection-foreground = 33467c
 selection-background = c0caf5
-palette = 0=191919
-palette = 1=f7768e
-palette = 2=9ece6a
-palette = 3=e0af68
-palette = 4=7aa2f7
-palette = 5=bb9af7
-palette = 6=7dcfff
-palette = 7=ececec
-palette = 8=191919
-palette = 9=f7768e
-palette = 10=9ece6a
-palette = 11=e0af68
-palette = 12=7aa2f7
-palette = 13=bb9af7
-palette = 14=7dcfff
-palette = 15=ececec
+palette = 0=#000000
+palette = 1=#EF2F27
+palette = 2=#519F50
+palette = 3=#FBB829
+palette = 4=#2C78BF
+palette = 5=#E02C6D
+palette = 6=#0AAEB3
+palette = 7=#ECECEC
+palette = 8=#918175
+palette = 9=#F75341
+palette = 10=#98BC37
+palette = 11=#FED06E
+palette = 12=#68A8E4
+palette = 13=#FF5C8F
+palette = 14=#2BE4D0
+palette = 15=#ECECEC
