@@ -145,6 +145,7 @@ alias cfvim="cd ~/.config/nvim/ && nvim ."
 alias cfzsh="nvim ~/.config/zsh/zshrc && . ~/.zshrc"
 alias cftmux="nvim ~/.config/tmux/tmux.conf"
 alias cfscripts="cd ~/.local/bin"
+alias cfobsidian="cd \"/Users/$(echo $USER)/Library/Mobile Documents/iCloud~md~obsidian/Documents/Samuel\""
 
 ## WORK
 alias ocwork="opencode -m amazon-bedrock/anthropic.claude-sonnet-4-5-20250929-v1:0"
