@@ -1,1 +1,5 @@
 .DS_Store
+.pi/agent/sessions
+.pi/agent/npm
+pi/agent/npm
+pi/agent/sessions

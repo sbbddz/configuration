@@ -148,8 +148,12 @@ alias cfscripts="cd ~/.local/bin"
 alias cfobsidian="cd \"/Users/$(echo $USER)/Library/Mobile Documents/iCloud~md~obsidian/Documents/Samuel\""
 
 ## WORK
-alias ocwork="opencode -m amazon-bedrock/anthropic.claude-sonnet-4-5-20250929-v1:0"
+
+## WORK
+alias ocwork="opencode -m amazon-bedrock/eu.anthropic.claude-opus-4-6-v1"
 alias ocw=ocwork
+alias piwork="pi --model amazon-bedrock/eu.anthropic.claude-opus-4-6-v1 --thinking off"
+alias piw=piwork
 
 ## OS SPECIFIC
 if uname -s | grep -q Darwin ; then
