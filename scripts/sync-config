@@ -1,0 +1,335 @@
+#!/usr/bin/env bash
+# ============================================================
+# sync-config — Bidirectional config sync between repo and system
+#
+# Usage:
+#   sync-config push [--dry-run] [--verbose]
+#   sync-config pull [--dry-run] [--verbose]
+#   sync-config        (interactive — prompts for direction)
+#
+# Configuration: edit the MAPPINGS array below.
+# ============================================================
+
+set -euo pipefail
+
+# ── Config ──────────────────────────────────────────────────
+REPO_DIR="${REPO_DIR:-$HOME/Repos/configuration}"
+
+# Each entry: "repo_subpath|system_path|type|os_filter"
+#   repo_subpath: path relative to REPO_DIR
+#   system_path:  absolute system path (~ is expanded)
+#   type:         file (single file) or dir (sync directory contents)
+#   os_filter:    all, linux, or macos
+MAPPINGS=(
+  # ── Zsh ───────────────────────────────────────────────
+  "zsh/zshrc              | ~/.config/zsh/zshrc            | file   | all"
+  "zsh/zprofile           | ~/.config/zsh/zprofile         | file   | all"
+  "zsh/arrow.zsh-theme    | ~/.config/zsh/arrow.zsh-theme  | file   | all"
+
+  # ── Tmux ──────────────────────────────────────────────
+  "tmux/tmux.conf         | ~/.config/tmux/tmux.conf       | file   | all"
+  "tmux/tmux.macos.conf   | ~/.config/tmux/tmux.macos.conf | file   | macos"
+
+  # ── Ghostty ───────────────────────────────────────────
+  "ghostty/config         | ~/.config/ghostty/config       | file   | all"
+
+  # ── WezTerm ───────────────────────────────────────────
+  ".wezterm.lua           | ~/.config/wezterm/wezterm.lua  | file   | all"
+
+  # ── VSCode ────────────────────────────────────────────
+  "vscode/settings.json   | ~/.config/Code/User/settings.json     | file   | all"
+  "vscode/keybindings.json| ~/.config/Code/User/keybindings.json  | file   | all"
+
+  # ── Pi coding agent ───────────────────────────────────
+  "pi/agent/settings.json | ~/.pi/agent/settings.json      | file   | all"
+  "pi/agent/auth.json     | ~/.pi/agent/auth.json          | file   | all"
+  "pi/agent/themes        | ~/.pi/agent/themes             | dir    | all"
+
+  # ── OpenCode ──────────────────────────────────────────
+  "opencode/config.json   | ~/.config/opencode/config.json | file   | all"
+
+  # ── Scripts ───────────────────────────────────────────
+  "scripts                | ~/.local/bin                   | dir    | all"
+
+  # ── macOS only ────────────────────────────────────────
+  "macos/.hammerspoon     | ~/.hammerspoon                 | dir    | macos"
+  "macos/Brewfile         | ~/Brewfile                     | file   | macos"
+  "macos/karabiner.json   | ~/.config/karabiner/karabiner.json | file | macos"
+  "macos/RectangleConfig.json | ~/RectangleConfig.json     | file   | macos"
+
+  # ── PowerShell (Windows) ──────────────────────────────
+  "pwsh/theme.omp.json                    | ~/theme.omp.json                       | file   | all"
+  "pwsh/Microsoft.Powershell_profile.ps1  | ~/Documents/PowerShell/Microsoft.Powershell_profile.ps1 | file | all"
+)
+
+# ── Helpers ─────────────────────────────────────────────────
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
+DRY_RUN=false
+VERBOSE=false
+MODE=""
+
+copied=0
+skipped=0
+failed=0
+
+usage() {
+  cat <<EOF
+${BOLD}sync-config${NC} — Bidirectional config sync between repo and system.
+
+${BOLD}Usage:${NC}
+  sync-config push   [--dry-run] [--verbose]   Deploy repo → system
+  sync-config pull   [--dry-run] [--verbose]   Update repo ← system
+  sync-config                                   Interactive prompt
+
+${BOLD}Flags:${NC}
+  --dry-run     Show what would be done without doing it
+  --verbose, -v Show each action as it happens
+  --help, -h    Show this help
+
+${BOLD}Repo:${NC}  $REPO_DIR
+EOF
+  exit 0
+}
+
+detect_os() {
+  case "$(uname -s)" in
+    Linux)  echo "linux" ;;
+    Darwin) echo "macos" ;;
+    *)      echo "other" ;;
+  esac
+}
+
+expand_path() {
+  # Expand ~ to $HOME in a path string
+  local path="$1"
+  echo "${path/#\~/$HOME}"
+}
+
+resolve_paths() {
+  # Given repo_subpath and system_path pattern, return absolute repo and system paths
+  local repo_sub="$1"
+  local sys_pat="$2"
+
+  local repo_path="${REPO_DIR}/${repo_sub}"
+  local sys_path
+  sys_path="$(expand_path "$sys_pat")"
+
+  echo "${repo_path}|${sys_path}"
+}
+
+log_info()  { echo -e "${GREEN}→${NC} $*"; }
+log_skip()  { echo -e "${YELLOW}○${NC} $* (skipped)"; }
+log_error() { echo -e "${RED}✕${NC} $*"; }
+log_dry()   { echo -e "${CYAN}~${NC} [dry-run] $*"; }
+
+sync_file() {
+  local src="$1"
+  local dst="$2"
+
+  # Check source exists
+  if [[ ! -f "$src" ]]; then
+    log_error "Source not found: $src"
+    (( ++failed ))
+    return 1
+  fi
+
+  # Ensure target directory exists
+  local dst_dir
+  dst_dir="$(dirname "$dst")"
+  if [[ ! -d "$dst_dir" ]]; then
+    if $DRY_RUN; then
+      log_dry "mkdir -p $dst_dir"
+    else
+      mkdir -p "$dst_dir"
+      $VERBOSE && log_info "mkdir -p $dst_dir"
+    fi
+  fi
+
+  if $DRY_RUN; then
+    log_dry "cp $src → $dst"
+    (( ++copied ))
+    return 0
+  fi
+
+  if cp "$src" "$dst"; then
+    $VERBOSE && log_info "$src → $dst"
+    (( ++copied ))
+  else
+    log_error "Failed to copy $src → $dst"
+    (( ++failed ))
+    return 1
+  fi
+}
+
+sync_dir() {
+  local src="$1"
+  local dst="$2"
+
+  # Source must be a directory
+  if [[ ! -d "$src" ]]; then
+    log_error "Source directory not found: $src"
+    (( ++failed ))
+    return 1
+  fi
+
+  # Ensure target directory exists
+  if [[ ! -d "$dst" ]]; then
+    if $DRY_RUN; then
+      log_dry "mkdir -p $dst"
+    else
+      mkdir -p "$dst"
+    fi
+  fi
+
+  # Copy each file inside the source directory
+  local item
+  for item in "$src"/*; do
+    # Skip if glob didn't match anything
+    [[ -e "$item" ]] || continue
+
+    local name
+    name="$(basename "$item")"
+
+    if [[ -f "$item" ]]; then
+      sync_file "$item" "${dst}/${name}"
+    elif [[ -d "$item" ]]; then
+      # Recursively sync subdirectories
+      sync_dir "$item" "${dst}/${name}"
+    fi
+  done
+}
+
+process_entry() {
+  local entry="$1"
+
+  # Parse fields
+  local repo_sub system_pat type os_filter
+  IFS='|' read -r repo_sub system_pat type os_filter <<< "$entry"
+
+  # Trim whitespace
+  repo_sub="$(echo "$repo_sub" | xargs)"
+  system_pat="$(echo "$system_pat" | xargs)"
+  type="$(echo "$type" | xargs)"
+  os_filter="$(echo "$os_filter" | xargs)"
+
+  # OS filter
+  if [[ "$os_filter" != "all" && "$os_filter" != "$CURRENT_OS" ]]; then
+    $VERBOSE && log_skip "$repo_sub (OS: $os_filter, current: $CURRENT_OS)"
+    (( ++skipped ))
+    return
+  fi
+
+  # Resolve paths
+  local resolved
+  resolved="$(resolve_paths "$repo_sub" "$system_pat")"
+  local repo_path sys_path
+  repo_path="${resolved%%|*}"
+  sys_path="${resolved##*|}"
+
+  # Determine src/dst based on mode
+  local src dst
+  if [[ "$MODE" == "push" ]]; then
+    src="$repo_path"
+    dst="$sys_path"
+  else
+    src="$sys_path"
+    dst="$repo_path"
+  fi
+
+  # Check source exists, skip gracefully if not
+  if [[ "$type" == "file" && ! -f "$src" ]]; then
+    $VERBOSE && log_skip "$src (not found)"
+    (( ++skipped ))
+    return
+  fi
+  if [[ "$type" == "dir" && ! -d "$src" ]]; then
+    $VERBOSE && log_skip "$src (not found)"
+    (( ++skipped ))
+    return
+  fi
+
+  case "$type" in
+    file) sync_file "$src" "$dst" ;;
+    dir)  sync_dir  "$src" "$dst" ;;
+    *)
+      log_error "Unknown type '$type' for entry: $entry"
+      (( ++failed ))
+      ;;
+  esac
+}
+
+# ── Main ─────────────────────────────────────────────────────
+
+# Parse flags
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    push|pull)
+      MODE="$1"
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --verbose|-v)
+      VERBOSE=true
+      shift
+      ;;
+    --help|-h)
+      usage
+      ;;
+    *)
+      echo -e "${RED}Unknown argument: $1${NC}"
+      usage
+      ;;
+  esac
+done
+
+# Interactive mode
+if [[ -z "$MODE" ]]; then
+  echo -e "${BOLD}sync-config${NC}"
+  echo "Repo: $REPO_DIR"
+  echo ""
+  echo "Choose direction:"
+  echo "  [p] Push — repo → system (deploy configs)"
+  echo "  [u] Pull — system → repo (update repo)"
+  echo "  [q] Quit"
+  read -r -p "> " choice
+  case "$choice" in
+    p|P|push) MODE="push" ;;
+    u|U|pull) MODE="pull" ;;
+    q|Q)     echo "Bye."; exit 0 ;;
+    *)       echo -e "${RED}Invalid choice${NC}"; exit 1 ;;
+  esac
+  echo ""
+fi
+
+CURRENT_OS="$(detect_os)"
+
+echo -e "${BOLD}$( [[ "$MODE" == "push" ]] && echo "Pushing" || echo "Pulling" ) configs${NC}"
+echo -e "  OS:     ${CYAN}${CURRENT_OS}${NC}"
+echo -e "  Repo:   ${CYAN}${REPO_DIR}${NC}"
+$DRY_RUN && echo -e "  Mode:   ${YELLOW}dry-run${NC}"
+echo ""
+
+# Process all mappings
+for entry in "${MAPPINGS[@]}"; do
+  # Skip empty lines and comments
+  [[ -z "$entry" || "$entry" =~ ^[[:space:]]*# ]] && continue
+  process_entry "$entry"
+done
+
+# Summary
+echo ""
+echo -e "${BOLD}Done.${NC}  ${GREEN}${copied} copied${NC}  ${YELLOW}${skipped} skipped${NC}  ${RED}${failed} failed${NC}"
+$DRY_RUN && echo -e "${CYAN}(dry-run — nothing was actually changed)${NC}"
+
+if [[ "$failed" -gt 0 ]]; then
+  exit 1
+fi
