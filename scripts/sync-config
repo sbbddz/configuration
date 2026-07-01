@@ -24,7 +24,6 @@ MAPPINGS=(
   # ── Zsh ───────────────────────────────────────────────
   "zsh/zshrc              | ~/.config/zsh/zshrc            | file   | all"
   "zsh/zprofile           | ~/.config/zsh/zprofile         | file   | all"
-  "zsh/arrow.zsh-theme    | ~/.config/zsh/arrow.zsh-theme  | file   | all"
 
   # ── Tmux ──────────────────────────────────────────────
   "tmux/tmux.conf         | ~/.config/tmux/tmux.conf       | file   | all"

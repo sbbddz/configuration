@@ -1,8 +1,8 @@
 {
-  "lastChangelogVersion": "0.78.0",
+  "lastChangelogVersion": "0.80.2",
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-pro",
-  "hideThinkingBlock": true,
+  "defaultModel": "deepseek-v4/deepseek-v4-pro",
+  "hideThinkingBlock": false,
   "theme": "terminal",
   "packages": [
     "npm:@ff-labs/pi-fff"
