@@ -2,6 +2,29 @@
 
 # Credits: https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer
 
+if [[ $1 == "--work" ]]; then
+    workfile="$HOME/.tms.work"
+    if [[ ! -f $workfile ]]; then
+        echo "~/.tms.work not found"
+        exit 1
+    fi
+
+    first=""
+    while IFS= read -r dir; do
+        [[ -z "$dir" || "$dir" == \#* ]] && continue
+        dir="${dir/#\~/$HOME}"
+        [[ -z $first ]] && first="$dir"
+
+        name=$(basename "$dir" | tr . _)
+        if ! tmux has-session -t="$name" 2>/dev/null; then
+            tmux new-session -ds "$name" -c "$dir"
+        fi
+    done < "$workfile"
+
+    [[ -n $first ]] && tmux switch-client -t "$(basename "$first" | tr . _)"
+    exit 0
+fi
+
 if [[ $# -eq 1 ]]; then
     selected=$1
 else

@@ -41,14 +41,14 @@ MAPPINGS=(
 
   # ── Pi coding agent ───────────────────────────────────
   "pi/agent/settings.json | ~/.pi/agent/settings.json      | file   | all"
-  "pi/agent/auth.json     | ~/.pi/agent/auth.json          | file   | all"
   "pi/agent/themes        | ~/.pi/agent/themes             | dir    | all"
 
   # ── OpenCode ──────────────────────────────────────────
   "opencode/config.json   | ~/.config/opencode/config.json | file   | all"
 
   # ── Scripts ───────────────────────────────────────────
-  "scripts                | ~/.local/bin                   | dir    | all"
+  "scripts/tms                | ~/.local/bin/tms                   | file    | all"
+  "scripts/sync-config                | ~/.local/bin/sync-config                   | file    | all"
 
   # ── macOS only ────────────────────────────────────────
   "macos/.hammerspoon     | ~/.hammerspoon                 | dir    | macos"
