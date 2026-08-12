@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.82.1",
+  "lastChangelogVersion": "0.84.1",
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4-pro",
   "hideThinkingBlock": false,
@@ -7,5 +7,6 @@
   "packages": [
     "npm:@ff-labs/pi-fff"
   ],
-  "defaultThinkingLevel": "max"
+  "defaultThinkingLevel": "max",
+  "tuiMode": "regular"
 }

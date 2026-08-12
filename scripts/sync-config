@@ -42,6 +42,7 @@ MAPPINGS=(
   # ── Pi coding agent ───────────────────────────────────
   "pi/agent/settings.json | ~/.pi/agent/settings.json      | file   | all"
   "pi/agent/themes        | ~/.pi/agent/themes             | dir    | all"
+  "pi/agent/prompts        | ~/.pi/agent/prompts             | dir    | all"
 
   # ── OpenCode ──────────────────────────────────────────
   "opencode/config.json   | ~/.config/opencode/config.json | file   | all"

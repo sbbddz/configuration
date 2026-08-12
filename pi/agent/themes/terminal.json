@@ -78,11 +78,11 @@
     "syntaxPunctuation": "brightBlack",
 
     "thinkingOff": "brightBlack",
-    "thinkingMinimal": "blue",
-    "thinkingLow": "blue",
-    "thinkingMedium": "cyan",
-    "thinkingHigh": "magenta",
-    "thinkingXhigh": "red",
+    "thinkingMinimal": "brightBlack",
+    "thinkingLow": "brightBlack",
+    "thinkingMedium": "brightBlack",
+    "thinkingHigh": "brightBlack",
+    "thinkingXhigh": "brightBlack",
 
     "bashMode": "green"
   }
