@@ -44,6 +44,9 @@ MAPPINGS=(
   "pi/agent/themes        | ~/.pi/agent/themes             | dir    | all"
   "pi/agent/prompts        | ~/.pi/agent/prompts             | dir    | all"
 
+  # Agents in general
+  "AGENTS.md | ~/AGENTS.md | file | all"
+
   # ── OpenCode ──────────────────────────────────────────
   "opencode/config.json   | ~/.config/opencode/config.json | file   | all"
 
