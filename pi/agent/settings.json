@@ -1,12 +1,10 @@
 {
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "0.84.4",
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-pro",
+  "defaultModel": "deepseek-v4-flash",
   "hideThinkingBlock": false,
   "theme": "terminal",
-  "packages": [
-    "npm:@ff-labs/pi-fff"
-  ],
+  "packages": [],
   "defaultThinkingLevel": "max",
   "tuiMode": "regular"
 }

@@ -20,11 +20,11 @@
     "brightCyan": 14,
     "brightWhite": 15,
 
-    "userMsgBg": "#2e2e2e",
-    "customMsgBg": "#2a2a36",
-    "pendingBg": "#3a3520",
-    "successBg": "#2a332a",
-    "errorBg": "#3a2a2a"
+    "userMsgBg": "#1e1e1e",
+    "customMsgBg": "#1c1c23",
+    "pendingBg": "#252216",
+    "successBg": "#1c211c",
+    "errorBg": "#251c1c"
   },
   "colors": {
     "accent": "blue",
