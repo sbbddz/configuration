@@ -43,6 +43,7 @@ MAPPINGS=(
   "pi/agent/settings.json | ~/.pi/agent/settings.json      | file   | all"
   "pi/agent/themes        | ~/.pi/agent/themes             | dir    | all"
   "pi/agent/prompts        | ~/.pi/agent/prompts             | dir    | all"
+  "pi/agent/extensions        | ~/.pi/agent/extensions             | dir    | all"
 
   # Agents in general
   "AGENTS.md | ~/AGENTS.md | file | all"

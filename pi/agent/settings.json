@@ -1,10 +1,14 @@
 {
-  "lastChangelogVersion": "0.84.4",
+  "lastChangelogVersion": "1.0.2",
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-flash",
+  "defaultModel": "deepseek-v4.1-flash",
   "hideThinkingBlock": false,
   "theme": "terminal",
   "packages": [],
   "defaultThinkingLevel": "max",
-  "tuiMode": "regular"
+  "tuiMode": "regular",
+  "outputPad": 1,
+  "defaultTools": [
+    "+codemode"
+  ]
 }
