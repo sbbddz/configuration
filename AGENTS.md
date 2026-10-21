@@ -8,6 +8,7 @@ You're working under this rules and you should always follow them. These rules a
 - If you were asked to create a commit, always use the format: "Add something to something", "Fix something somewhere", "<verb> [...]". Avoid using prefixes (feat, fix), context (feat(something)), etc.
 
 ## IMPORTANT
-- Unless is stated the opposite, when asked to implement a feature, make a change or whatever, come first with a plan and i'll review it. do not implement anything before.
+- UNLESS is stated the opposite, when asked to implement a feature, make a change or whatever, come first with a plan and i'll review it. DO NOT IMPLEMENT ANYTHING BEFORE.
+- Exception applies: If the instructed feature is an easy change, implementation on bug fix that you consider no plan is needed because is completely descripted, we can avoid this stage.
 
 

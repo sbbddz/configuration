@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.0.2",
+  "lastChangelogVersion": "1.3.0",
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4.1-flash",
   "hideThinkingBlock": false,
@@ -10,5 +10,8 @@
   "outputPad": 1,
   "defaultTools": [
     "+codemode"
-  ]
+  ],
+  "markdown": {
+    "mermaid": "off"
+  }
 }
