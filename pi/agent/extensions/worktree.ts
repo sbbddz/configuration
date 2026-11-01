@@ -2,36 +2,21 @@
  * Git worktrees for Pi.
  *
  * `/worktree <branch>` creates (or reuses) a worktree next to the main repository and
- * switches Pi into it. `/spawn` runs a command there without blocking, `/log` shows its
- * output and `/kill` stops it.
+ * switches Pi into it.
  *
  * Pi has no runtime cwd setter, so the switch uses the supported path: fork the session
  * to a file whose header points at the worktree, then resume it.
  */
 
-import { execFile, spawn, type ChildProcess } from "node:child_process";
+import { execFile } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { copyFileSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, SessionInfo } from "@earendil-works/pi-coding-agent";
 import { CURRENT_SESSION_VERSION, SessionManager, SessionSelectorComponent } from "@earendil-works/pi-coding-agent";
 
 /** Where worktrees are created: relative paths resolve next to the main repository. */
 const WORKTREES_DIR = ".worktrees";
-/** Spawn logs, one directory per worktree, outside the checkout so `git status` stays clean. */
-const SPAWN_LOG_DIR = join(homedir(), ".pi", "worktrees");
-/** `/log` shows at most this many characters from the end of a log. */
-const LOG_TAIL = 64 * 1024;
-
-type Spawned = {
-	pid: number;
-	command: string;
-	child: ChildProcess;
-	logPath: string;
-	startedAt: number;
-	exited: boolean;
-};
 
 function errorText(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
@@ -41,14 +26,6 @@ function errorText(error: unknown): string {
 function gitError(stderr: string, code: number): string {
 	const lines = stderr.trim().split("\n").filter(Boolean);
 	return lines.find((line) => /^(fatal|error):/i.test(line)) ?? lines.at(-1) ?? `git exited with code ${code}`;
-}
-
-function notify(ctx: ExtensionCommandContext, message: string, type: "info" | "warning" | "error"): void {
-	try {
-		ctx.ui.notify(message, type);
-	} catch {
-		// The runtime was replaced (session switch); there is no UI left to notify.
-	}
 }
 
 /** Name the tmux window hosting this Pi pane after the worktree branch. Cosmetic. */
@@ -256,40 +233,10 @@ async function pickSession(ctx: ExtensionCommandContext, sessions: SessionInfo[]
 	});
 }
 
-function pickProcess(pidArg: string, processes: Map<number, Spawned>): Spawned | undefined {
-	if (pidArg) return processes.get(Number(pidArg));
-	return [...processes.values()].sort((a, b) => b.startedAt - a.startedAt)[0];
-}
-
-function killProcess(proc: Spawned): void {
-	if (proc.exited) return;
-	try {
-		if (process.platform === "win32") proc.child.kill("SIGTERM");
-		else process.kill(-proc.pid, "SIGTERM"); // detached child: kill its whole process group
-	} catch {
-		try {
-			proc.child.kill("SIGTERM");
-		} catch {
-			// Already gone.
-		}
-	}
-}
-
-function readTail(path: string): string {
-	try {
-		const text = readFileSync(path, "utf8");
-		return text.length <= LOG_TAIL ? text : `… (truncated)\n${text.slice(text.length - LOG_TAIL)}`;
-	} catch {
-		return "(no output yet)";
-	}
-}
-
 export default function (pi: ExtensionAPI): void {
-	const processes = new Map<number, Spawned>();
-
-	pi.registerCommand("worktree", {
+	const worktree = {
 		description: "Create or reuse a git worktree and switch Pi into it",
-		handler: async (args, ctx) => {
+		handler: async (args: string, ctx: ExtensionCommandContext): Promise<void> => {
 			if (ctx.mode === "json" || ctx.mode === "print") {
 				ctx.ui.notify("worktree requires interactive or RPC mode", "error");
 				return;
@@ -317,7 +264,9 @@ export default function (pi: ExtensionAPI): void {
 				ctx.ui.notify(`worktree: ${errorText(error)}`, "error");
 			}
 		},
-	});
+	};
+	pi.registerCommand("worktree", worktree);
+	pi.registerCommand("wt", worktree);
 
 	pi.registerCommand("root", {
 		description: "Open a new session at the main repository root",
@@ -377,81 +326,7 @@ export default function (pi: ExtensionAPI): void {
 		},
 	});
 
-	pi.registerCommand("spawn", {
-		description: "Run a command in the current worktree without blocking",
-		handler: (args, ctx) => {
-			const command = args.trim();
-			if (!command) {
-				ctx.ui.notify("Usage: /spawn <command>", "error");
-				return;
-			}
-			const dir = join(SPAWN_LOG_DIR, basename(ctx.cwd), ".spawn");
-			mkdirSync(dir, { recursive: true });
-			const child = spawn(command, {
-				shell: true,
-				cwd: ctx.cwd,
-				detached: process.platform !== "win32",
-				stdio: ["ignore", "pipe", "pipe"],
-			});
-			child.once("error", (error) => notify(ctx, `⚠ spawn failed: ${error.message}`, "error"));
-			if (!child.pid) return;
-			const proc: Spawned = {
-				pid: child.pid,
-				command,
-				child,
-				logPath: join(dir, `${child.pid}.log`),
-				startedAt: Date.now(),
-				exited: false,
-			};
-			processes.set(proc.pid, proc);
-			const log = createWriteStream(proc.logPath);
-			child.stdout?.pipe(log);
-			child.stderr?.pipe(log);
-			child.once("exit", (code, signal) => {
-				if (proc.exited) return;
-				proc.exited = true;
-				notify(ctx, `⚠ process ${proc.pid} exited with ${signal ? `signal ${signal}` : `code ${code}`}`, "warning");
-			});
-			child.once("close", () => log.end());
-			ctx.ui.notify(`✓ spawned\n  ${command}\n  pid: ${proc.pid}`, "info");
-		},
-	});
-
-	pi.registerCommand("log", {
-		description: "Show output from a spawned process",
-		handler: async (args, ctx) => {
-			const pidArg = args.trim();
-			const proc = pickProcess(pidArg, processes);
-			if (!proc) {
-				ctx.ui.notify(pidArg ? `No spawned process with pid ${pidArg}` : "No spawned process tracked", "info");
-				return;
-			}
-			const status = proc.exited ? "exited" : "running";
-			await ctx.ui.editor(`${proc.command} — PID ${proc.pid} (${status})`, readTail(proc.logPath));
-		},
-	});
-
-	pi.registerCommand("kill", {
-		description: "Kill a spawned process (latest by default)",
-		handler: (args, ctx) => {
-			const pidArg = args.trim();
-			const proc = pickProcess(pidArg, processes);
-			if (!proc) {
-				ctx.ui.notify(pidArg ? `No spawned process with pid ${pidArg}` : "No spawned process tracked", "info");
-				return;
-			}
-			if (proc.exited) {
-				ctx.ui.notify(`Process ${proc.pid} already exited`, "info");
-				return;
-			}
-			killProcess(proc);
-			ctx.ui.notify(`✓ killed\n  ${proc.command}\n  pid: ${proc.pid}`, "info");
-		},
-	});
-
 	pi.on("session_shutdown", (event, ctx) => {
-		for (const proc of processes.values()) killProcess(proc);
-		processes.clear();
 		if (event.reason === "reload") return; // The session survives a reload.
 		const file = ctx.sessionManager.getSessionFile();
 		if (file && isEphemeral(ctx.sessionManager) && !hasConversation(ctx.sessionManager)) {

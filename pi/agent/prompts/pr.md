@@ -1,4 +1,4 @@
 ---
-description: Asks the agent for a commit and a PR
+description: Asks the agent for implementing it, commit and opening PR
 ---
-Commit, push and open a PR describing what was done in some brief bullet points
+Implement it, commit, push and open a PR describing what was done in some brief bullet points
