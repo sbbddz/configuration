@@ -84,26 +84,6 @@ ensure_rex() {
     return 1
 }
 
-rex_id() {
-    "$REX" ls --json |
-        jq -r --arg l "$1" 'first(.sessions[] | select(.label == $l) | .session_id) // empty'
-}
-
-rex_open() {
-    local id
-    id=$(rex_id "$1")
-    [[ -n $id ]] || id=$("$REX" new "$1" --cwd "$2" --json | jq -r .session_id)
-    printf '%s\n' "$id"
-}
-
-rex_focus() {
-    local id
-    id=$(rex_id "$1")
-    [[ -n $id ]] || return 0
-    "$REX" do session.select session_id="$id" >/dev/null 2>&1 ||
-        echo "tms: could not switch Rex; turn on Remote Control in Settings > Server > Client Info" >&2
-}
-
 name_of() { basename "$1" | tr . _; }
 
 ensure_backend() {
@@ -120,7 +100,6 @@ open_dir() {
     case $backend in
         tmux) tmux has-session -t="$name" 2>/dev/null || tmux new-session -ds "$name" -c "$1" ;;
         herdr) open_space "$1" ;;
-        rex) rex_open "$name" "$1" >/dev/null ;;
     esac
 }
 
@@ -138,10 +117,6 @@ focus_dir() {
         herdr)
             open_space "$1"
             open -a Herdr >/dev/null 2>&1
-            ;;
-        rex)
-            open -b "$REX_APP" >/dev/null 2>&1
-            rex_focus "$name"
             ;;
     esac
 }
@@ -170,6 +145,10 @@ if (( work )); then
 
     ensure_backend || exit 1
 
+    if [[ $backend == rex ]]; then
+        exec "$REX" do pick_work
+    fi
+
     first=""
     while IFS= read -r dir; do
         [[ -z "$dir" || "$dir" == \#* ]] && continue
@@ -195,6 +174,10 @@ fi
 
 selected="${dirs[0]:-}"
 if [[ -z $selected ]]; then
+    if [[ $backend == rex ]]; then
+        ensure_backend || exit 1
+        exec "$REX" do pick_project
+    fi
     selected=$(find ~/Code ~/Documents ~/Work ~/Repos ~/Projects -maxdepth 1 -type d 2>/dev/null | fzf)
 fi
 
@@ -202,6 +185,18 @@ if [[ -z $selected ]]; then
     exit 0
 fi
 
+if [[ $selected != /* ]]; then
+    selected=$(cd "$selected" 2>/dev/null && pwd) || {
+        echo "tms: no such directory: $selected" >&2
+        exit 1
+    }
+fi
+
 ensure_backend || exit 1
+
+if [[ $backend == rex ]]; then
+    exec "$REX" do open_session "dir=$selected"
+fi
+
 open_dir "$selected" || exit 1
 focus_dir "$selected" || exit 1

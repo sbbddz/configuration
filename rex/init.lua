@@ -1,5 +1,7 @@
 -- A tmux-flavored flow. Reload with: rex config reload
 
+require("rxs")
+
 -- Session picker (tmux prefix + s): j/k move, i searches, x closes (with a
 -- y/N confirmation), enter selects, esc leaves search and then quits.
 -- The session you are in is selected when the picker opens.
@@ -35,6 +37,9 @@ rex.action{
   end,
 }
 rex.bind("ctrl+b>s", "pick_session")
+
+-- Project sessionizer, same as running rxs from a plain shell.
+rex.bind("ctrl+b>m", "pick_project")
 
 -- Tabs are tmux windows, with the prefix and by number.
 rex.bind("ctrl+b>c", "client.tab.new")

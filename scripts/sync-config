@@ -31,6 +31,7 @@ MAPPINGS=(
 
   # ── Rex ──────────────────────────────────────────────
   "rex/init.lua          | ~/.config/rex/init.lua       | file   | all"
+  "rex/rxs.lua           | ~/.config/rex/rxs.lua        | file   | all"
   "rex/appearance.sh     | ~/.config/rex/apparance.sh | file   | all"
   "rex/appearance.json   | ~/.config/rex/apparance.json | file   | all"
 
@@ -58,6 +59,8 @@ MAPPINGS=(
 
   # ── Scripts ───────────────────────────────────────────
   "scripts/tms                | ~/.local/bin/tms                   | file    | all"
+  "scripts/rxs                | ~/.local/bin/rxs                   | file    | all"
+  "scripts/wt                | ~/.local/bin/wt                   | file    | all"
   "scripts/sync-config                | ~/.local/bin/sync-config                   | file    | all"
 
   # ── macOS only ────────────────────────────────────────
