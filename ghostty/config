@@ -6,7 +6,7 @@ foreground = ececec
 background = 060606
 font-family = IosevkaSamu Nerd Font
 font-style = SemiCondensed
-font-size = 27
+font-size = 25
 cursor-color = c0caf5
 cursor-text = 1a1b26
 selection-foreground = 33467c
@@ -16,7 +16,7 @@ palette = 1=#EF2F27
 palette = 2=#519F50
 palette = 3=#FBB829
 palette = 4=#2C78BF
-palette = 5=#E02C6D
+palette = 5=#D33D72
 palette = 6=#0AAEB3
 palette = 7=#ECECEC
 palette = 8=#918175

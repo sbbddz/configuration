@@ -1,42 +1,41 @@
 /**
  * Git worktrees for Pi.
  *
- * `/worktree <branch>` creates (or reuses) a worktree next to the main repository and
- * switches Pi into it.
+ * `/worktree <branch>` delegates creation to the `wt` CLI, then switches Pi into the
+ * root worktree. The CLI also supports multi-repo "home" roots.
  *
  * Pi has no runtime cwd setter, so the switch uses the supported path: fork the session
  * to a file whose header points at the worktree, then resume it.
  */
 
 import { execFile } from "node:child_process";
-import { createHash, randomUUID } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
-import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { randomUUID } from "node:crypto";
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { basename, dirname, join, resolve } from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext, SessionInfo } from "@earendil-works/pi-coding-agent";
 import { CURRENT_SESSION_VERSION, SessionManager, SessionSelectorComponent } from "@earendil-works/pi-coding-agent";
 
-/** Where worktrees are created: relative paths resolve next to the main repository. */
-const WORKTREES_DIR = ".worktrees";
+/** Prefer an absolute install: Pi may be launched with a minimal PATH. */
+const WT_BIN =
+	process.env.WT_BIN ||
+	[join(homedir(), ".pi/agent/bin/wt"), join(homedir(), ".local/bin/wt")].find((path) => existsSync(path)) ||
+	"wt";
 
 function errorText(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
 }
 
-/** The meaningful line from a git failure, ignoring progress chatter and hints. */
-function gitError(stderr: string, code: number): string {
-	const lines = stderr.trim().split("\n").filter(Boolean);
-	return lines.find((line) => /^(fatal|error):/i.test(line)) ?? lines.at(-1) ?? `git exited with code ${code}`;
-}
-
-/** Name the tmux window hosting this Pi pane after the worktree branch. Cosmetic. */
-function renameTmuxWindow(branch: string): void {
+/** Name the tmux window and Rex tab hosting this Pi pane. Cosmetic. */
+function renameCurrentTab(name: string): void {
 	const pane = process.env.TMUX_PANE;
-	if (!process.env.TMUX || !pane) return;
-	execFile("tmux", ["rename-window", "-t", pane, branch], () => {});
-}
-
-function sanitize(branch: string): string {
-	return branch.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^[-.]+|[-.]+$/g, "") || "worktree";
+	if (process.env.TMUX && pane) {
+		execFile("tmux", ["rename-window", "-t", pane, name], () => {});
+	}
+	if (process.env.REX_SESSION && process.env.REX_BLOCK) {
+		const rex = process.env.REX_BIN_DIR ? join(process.env.REX_BIN_DIR, "rex") : "rex";
+		execFile(rex, ["window", "rename", name], () => {});
+	}
 }
 
 /** The main repository root, even when invoked from inside a linked worktree. */
@@ -45,34 +44,6 @@ async function repoRoot(pi: ExtensionAPI, cwd: string): Promise<string> {
 	if (top.code !== 0) throw new Error(top.stderr.trim() || "not a git repository");
 	const common = await pi.exec("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { cwd });
 	return common.code === 0 ? dirname(common.stdout.trim()) : top.stdout.trim();
-}
-
-function worktreePath(mainRoot: string, branch: string): string {
-	const key = `${basename(mainRoot)}-${createHash("sha1").update(resolve(mainRoot)).digest("hex").slice(0, 6)}`;
-	const base = isAbsolute(WORKTREES_DIR) ? WORKTREES_DIR : resolve(dirname(mainRoot), WORKTREES_DIR);
-	return join(base, `${key}-${sanitize(branch)}`);
-}
-
-/** Creates the worktree, or validates an existing one. Returns whether it was created. */
-async function createWorktree(pi: ExtensionAPI, mainRoot: string, path: string, branch: string): Promise<boolean> {
-	if (existsSync(path)) {
-		const check = await pi.exec("git", ["rev-parse", "--git-dir"], { cwd: path });
-		if (check.code !== 0) throw new Error(`path exists and is not a git worktree: ${path}`);
-		return false;
-	}
-	mkdirSync(dirname(path), { recursive: true });
-	// Attaching lets git resolve a local branch or create one from a remote-tracking
-	// branch (DWIM), setting the remote as upstream in the latter case.
-	const attach = await pi.exec("git", ["worktree", "add", path, branch], { cwd: mainRoot });
-	if (attach.code !== 0) {
-		const local = await pi.exec("git", ["show-ref", "--verify", "--quiet", `refs/heads/${branch}`], { cwd: mainRoot });
-		if (local.code === 0) throw new Error(gitError(attach.stderr, attach.code));
-		const create = await pi.exec("git", ["worktree", "add", "-b", branch, path], { cwd: mainRoot });
-		if (create.code !== 0) throw new Error(gitError(create.stderr, create.code));
-	}
-	const env = join(mainRoot, ".env");
-	if (existsSync(env)) copyFileSync(env, join(path, ".env"));
-	return true;
 }
 
 /** Marks a session file this extension created only to switch cwd; disposable until it gets a conversation. */
@@ -121,35 +92,25 @@ async function replaceSession(
 	ctx: ExtensionCommandContext,
 	target: string,
 	notice: string,
-	tmuxName: string,
+	tabName: string,
 ): Promise<void> {
 	const result = await ctx.switchSession(target, {
 		withSession: async (replaced) => {
-			renameTmuxWindow(tmuxName);
+			renameCurrentTab(tabName);
 			replaced.ui.notify(notice, "info");
 		},
 	});
 	if (result.cancelled) ctx.ui.notify("Switch cancelled", "warning");
 }
 
-async function switchToWorktree(
-	ctx: ExtensionCommandContext,
-	path: string,
-	branch: string,
-	created: boolean,
-): Promise<void> {
+async function switchToWorktree(ctx: ExtensionCommandContext, path: string, branch: string): Promise<void> {
 	await waitForIdle(ctx);
 	const source = ctx.sessionManager.getSessionFile();
 	const target =
 		source && existsSync(source) && hasConversation(ctx.sessionManager)
 			? SessionManager.forkFrom(source, path).getSessionFile()!
 			: createEmptySession(path);
-	await replaceSession(
-		ctx,
-		target,
-		`✓ Worktree ${created ? "created" : "ready"}\n  branch: ${branch}\n  path: ${path}`,
-		branch,
-	);
+	await replaceSession(ctx, target, `✓ Worktree ready\n  branch: ${branch}\n  path: ${path}`, branch);
 }
 
 type Worktree = { path: string; branch: string };
@@ -157,7 +118,7 @@ type Worktree = { path: string; branch: string };
 /** Linked worktrees of the main repository, excluding the main checkout and stale paths. */
 async function listWorktrees(pi: ExtensionAPI, mainRoot: string): Promise<Worktree[]> {
 	const result = await pi.exec("git", ["worktree", "list", "--porcelain"], { cwd: mainRoot });
-	if (result.code !== 0) throw new Error(gitError(result.stderr, result.code));
+	if (result.code !== 0) throw new Error(result.stderr.trim() || `git worktree list exited with code ${result.code}`);
 	const worktrees: Worktree[] = [];
 	let current: Worktree | undefined;
 	for (const line of result.stdout.split("\n")) {
@@ -235,7 +196,7 @@ async function pickSession(ctx: ExtensionCommandContext, sessions: SessionInfo[]
 
 export default function (pi: ExtensionAPI): void {
 	const worktree = {
-		description: "Create or reuse a git worktree and switch Pi into it",
+		description: "Create or reuse worktree(s) and switch Pi into the root worktree",
 		handler: async (args: string, ctx: ExtensionCommandContext): Promise<void> => {
 			if (ctx.mode === "json" || ctx.mode === "print") {
 				ctx.ui.notify("worktree requires interactive or RPC mode", "error");
@@ -251,15 +212,19 @@ export default function (pi: ExtensionAPI): void {
 				return;
 			}
 			try {
-				const mainRoot = await repoRoot(pi, ctx.cwd);
-				const path = worktreePath(mainRoot, branch);
-				const created = await createWorktree(pi, mainRoot, path, branch);
+				const result = await pi.exec(WT_BIN, ["new", branch], { cwd: ctx.cwd });
+				if (result.code !== 0) {
+					throw new Error(result.stderr.trim() || `${WT_BIN} exited with code ${result.code}`);
+				}
+				const path = result.stdout.trim().split("\n").pop() ?? "";
+				if (!path) throw new Error(`${WT_BIN} returned no worktree path`);
+				if (!existsSync(path)) throw new Error(`worktree path does not exist: ${path}`);
 				if (resolve(ctx.cwd) === resolve(path)) {
-					renameTmuxWindow(branch);
+					renameCurrentTab(branch);
 					ctx.ui.notify(`Already in worktree\n  branch: ${branch}\n  path: ${path}`, "info");
 					return;
 				}
-				await switchToWorktree(ctx, path, branch, created);
+				await switchToWorktree(ctx, path, branch);
 			} catch (error) {
 				ctx.ui.notify(`worktree: ${errorText(error)}`, "error");
 			}

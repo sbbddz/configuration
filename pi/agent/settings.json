@@ -1,10 +1,12 @@
 {
-  "lastChangelogVersion": "1.4.0",
+  "lastChangelogVersion": "1.6.0",
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4.1-flash",
   "hideThinkingBlock": false,
   "theme": "terminal",
-  "packages": [],
+  "packages": [
+    "https://github.com/earendil-works/pi-claude-code"
+  ],
   "defaultThinkingLevel": "max",
   "tuiMode": "regular",
   "outputPad": 1,

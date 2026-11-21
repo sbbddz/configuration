@@ -29,6 +29,11 @@ MAPPINGS=(
   "tmux/tmux.conf         | ~/.config/tmux/tmux.conf       | file   | all"
   "tmux/tmux.macos.conf   | ~/.config/tmux/tmux.macos.conf | file   | macos"
 
+  # ── Rex ──────────────────────────────────────────────
+  "rex/init.lua          | ~/.config/rex/init.lua       | file   | all"
+  "rex/appearance.sh     | ~/.config/rex/apparance.sh | file   | all"
+  "rex/appearance.json   | ~/.config/rex/apparance.json | file   | all"
+
   # ── Ghostty ───────────────────────────────────────────
   "ghostty/config         | ~/.config/ghostty/config       | file   | all"
 

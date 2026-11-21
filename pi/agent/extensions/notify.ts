@@ -44,6 +44,8 @@ function focusCommand(): string | undefined {
 
 /** Fire-and-forget; a missing or denied notifier must never affect the agent run. */
 function notify(title: string, subtitle: string, body: string): void {
+	// Rex surfaces agent state itself; banners are for tmux and raw terminals.
+	if (process.env.REX_SESSION) return;
 	if (process.platform !== "darwin") return;
 	const pane = process.env.TMUX_PANE ?? "";
 	const args = ["-title", title, "-subtitle", subtitle, "-message", body, "-group", `pi-${pane || "local"}`];
