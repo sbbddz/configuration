@@ -58,10 +58,10 @@ MAPPINGS=(
   "opencode/config.json   | ~/.config/opencode/config.json | file   | all"
 
   # ── Scripts ───────────────────────────────────────────
-  "scripts/tms                | ~/.local/bin/tms                   | file    | all"
-  "scripts/rxs                | ~/.local/bin/rxs                   | file    | all"
-  "scripts/wt                | ~/.local/bin/wt                   | file    | all"
-  "scripts/sync-config                | ~/.local/bin/sync-config                   | file    | all"
+  "bin/tms                | ~/.local/bin/tms                   | file    | all"
+  "bin/rxs                | ~/.local/bin/rxs                   | file    | all"
+  "bin/wt                | ~/.local/bin/wt                   | file    | all"
+  "bin/sync-config                | ~/.local/bin/sync-config                   | file    | all"
 
   # ── macOS only ────────────────────────────────────────
   "macos/.hammerspoon     | ~/.hammerspoon                 | dir    | macos"

@@ -1,0 +1,536 @@
+#!/usr/bin/env bash
+# wt — git worktrees, with optional multi-repo "home" roots.
+#
+# Plain repo: wt new <name> creates <parent>/.worktrees/<repo>-<hash>-<name>.
+# Home repo:  a repo containing repos.txt. wt new <name> creates $WT_DIR/<name>
+#             plus one worktree per child repo listed in repos.txt.
+#
+# Env: WT_HOME (default ~/work-home), WT_DIR (default ~/work-wt).
+
+set -euo pipefail
+
+WT_HOME=${WT_HOME:-$HOME/work-home}
+WT_DIR=${WT_DIR:-$HOME/work-wt}
+
+log() { printf 'wt: %s\n' "$*" >&2; }
+die() { printf 'wt: %s\n' "$*" >&2; exit 1; }
+
+usage() {
+  cat <<'EOF'
+Usage:
+  wt new <name>    Create or reuse worktree(s); prints the root path
+  wt list          List worktrees
+  wt done <name>   Merge the root branch, remove worktrees, delete branches
+
+Plain repo: creates <parent>/.worktrees/<repo>-<hash>-<name>.
+Home repo:  a repo containing repos.txt. Children are cloned inside it,
+            one directory name per line. Each worktree gets files listed
+            in .wtinclude (or .env when .wtinclude is absent). Entries
+            must be untracked, relative paths; they are ignored automatically.
+
+Home child branches are deleted with -D; verify their PRs are merged first.
+
+Env: WT_HOME=~/work-home  WT_DIR=~/work-wt
+EOF
+}
+
+trim() {
+  printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+}
+
+sanitize() {
+  local value
+  value=$(printf '%s' "$1" | sed 's/[^A-Za-z0-9._-][^A-Za-z0-9._-]*/-/g; s/^[-.]*//; s/[-.]*$//')
+  printf '%s\n' "${value:-worktree}"
+}
+
+hash6() {
+  if command -v shasum >/dev/null 2>&1; then
+    printf '%s' "$1" | shasum -a 1 | cut -c1-6
+  elif command -v sha1sum >/dev/null 2>&1; then
+    printf '%s' "$1" | sha1sum | cut -c1-6
+  else
+    die "need shasum or sha1sum"
+  fi
+}
+
+wt_dir_abs() {
+  local dir=$WT_DIR
+  case $dir in
+    /*) ;;
+    *) dir=$PWD/$dir ;;
+  esac
+  if [ -d "$dir" ]; then
+    dir=$(cd "$dir" && pwd -P)
+  fi
+  printf '%s\n' "$dir"
+}
+
+common_dir() {
+  local start=$1 common
+  common=$(git -C "$start" rev-parse --git-common-dir 2>/dev/null) || return 1
+  case $common in
+    /*) ;;
+    *) common=$(cd "$start" && cd "$common" && pwd -P) || return 1 ;;
+  esac
+  printf '%s\n' "$common"
+}
+
+main_root() {
+  local common
+  common=$(common_dir "$1") || return 1
+  dirname "$common"
+}
+
+current_branch() {
+  git -C "$1" symbolic-ref --quiet --short HEAD 2>/dev/null
+}
+
+default_branch() {
+  local repo=$1 ref branch
+  ref=$(git -C "$repo" symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)
+  ref=${ref#origin/}
+  if [ -n "$ref" ] && git -C "$repo" show-ref --verify --quiet "refs/heads/$ref"; then
+    printf '%s\n' "$ref"
+    return 0
+  fi
+  for branch in main master; do
+    if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch"; then
+      printf '%s\n' "$branch"
+      return 0
+    fi
+  done
+  current_branch "$repo" || true
+}
+
+branch_exists() {
+  git -C "$1" show-ref --verify --quiet "refs/heads/$2"
+}
+
+has_remote_branch() {
+  [ -n "$(git -C "$1" for-each-ref --format='%(refname)' "refs/remotes/*/$2" 2>/dev/null)" ]
+}
+
+home_from_worktree() {
+  local dir main
+  dir=$(pwd -P)
+  while [ "$dir" != "/" ]; do
+    if [ -f "$dir/.git" ] && main=$(main_root "$dir" 2>/dev/null); then
+      if [ -f "$main/repos.txt" ]; then
+        printf '%s\n' "$main"
+        return 0
+      fi
+    fi
+    dir=$(dirname "$dir")
+  done
+  return 1
+}
+
+home_root() {
+  local main candidate=$WT_HOME
+  if main=$(home_from_worktree); then
+    printf '%s\n' "$main"
+    return 0
+  fi
+  case $candidate in
+    /*) ;;
+    *) candidate=$PWD/$candidate ;;
+  esac
+  if [ -d "$candidate" ]; then
+    candidate=$(cd "$candidate" && pwd -P)
+  fi
+  if main=$(main_root "$PWD" 2>/dev/null); then
+    if [ "$main" = "$candidate" ] || [ -f "$main/repos.txt" ]; then
+      printf '%s\n' "$main"
+      return 0
+    fi
+    return 1
+  fi
+  if [ -f "$candidate/repos.txt" ] && git -C "$candidate" rev-parse --git-dir >/dev/null 2>&1; then
+    printf '%s\n' "$candidate"
+    return 0
+  fi
+  return 1
+}
+
+repos_file_for() {
+  local home=$1 dest=${2:-}
+  if [ -n "$dest" ] && [ -f "$dest/repos.txt" ]; then
+    printf '%s\n' "$dest/repos.txt"
+    return 0
+  fi
+  if [ -f "$home/repos.txt" ]; then
+    printf '%s\n' "$home/repos.txt"
+    return 0
+  fi
+  return 1
+}
+
+validate_name() {
+  local name=$1
+  [ -n "$name" ] || die "branch name is empty"
+  case $name in
+    -*) die "branch name cannot start with '-'" ;;
+  esac
+  git check-ref-format --branch "$name" >/dev/null 2>&1 || die "invalid branch name: $name"
+}
+
+validate_repo() {
+  local home=$1 repo=$2
+  case $repo in
+    ''|.|..|-*|.*|*[!A-Za-z0-9._-]*) die "invalid repo name in repos.txt: '$repo'" ;;
+  esac
+  [ -d "$home/$repo" ] || die "repos.txt lists '$repo', but $home/$repo does not exist"
+  git -C "$home/$repo" rev-parse --git-dir >/dev/null 2>&1 || die "$home/$repo is not a git repository"
+}
+
+validate_include() {
+  local repo=$1 file=$2
+  case $file in
+    ''|.|/*|..|../*|*/../*|*/..|*/./*|*/.|*//*|\#*|\!*) die "$repo/.wtinclude: invalid path: '$file'" ;;
+    .git|.git/*|*/.git|*/.git/*) die "$repo/.wtinclude: refusing to copy git metadata: '$file'" ;;
+  esac
+  [ -e "$repo/$file" ] || die "$repo/.wtinclude: missing path: '$file'"
+  if [ -n "$(git -C "$repo" ls-files -- ":(literal)$file")" ]; then
+    die "$repo/.wtinclude: path is tracked: '$file'"
+  fi
+}
+
+ensure_ignored() {
+  local repo=$1 path=$2 pattern=${3:-$2} gitdir exclude
+  if git -C "$repo" check-ignore -q -- "$path"; then
+    return 0
+  fi
+  gitdir=$(common_dir "$repo") || die "cannot find git dir for $repo"
+  exclude=$gitdir/info/exclude
+  mkdir -p "$gitdir/info"
+  if [ ! -f "$exclude" ] || ! grep -qxF -- "$pattern" "$exclude"; then
+    printf '\n%s\n' "$pattern" >> "$exclude"
+    log "ignoring $pattern in $repo"
+  fi
+  if ! git -C "$repo" check-ignore -q -- "$path"; then
+    die "could not ignore $path in $repo (check .gitignore negations)"
+  fi
+}
+
+check_worktree() {
+  local dest=$1 name=$2 repo=${3:-} top branch dest_main repo_main
+  top=$(git -C "$dest" rev-parse --show-toplevel 2>/dev/null) || die "not a git worktree: $dest"
+  [ "$top" = "$(cd "$dest" && pwd -P)" ] || die "not a worktree root: $dest"
+  branch=$(current_branch "$dest" || true)
+  [ -n "$branch" ] || die "$dest has a detached HEAD"
+  [ "$branch" = "$name" ] || die "$dest is on '$branch', expected '$name'"
+  if [ -n "$repo" ]; then
+    dest_main=$(main_root "$dest") || die "cannot find main repo for $dest"
+    repo_main=$(main_root "$repo") || die "cannot find main repo for $repo"
+    [ "$dest_main" = "$repo_main" ] || die "$dest is not a worktree of $repo"
+  fi
+}
+
+add_worktree() {
+  local repo=$1 dest=$2 name=$3 base=${4:-}
+  if [ -e "$dest" ]; then
+    check_worktree "$dest" "$name" "$repo"
+    return 0
+  fi
+  mkdir -p "$(dirname "$dest")"
+  if git -C "$repo" show-ref --verify --quiet "refs/heads/$name"; then
+    git -C "$repo" worktree add "$dest" "$name" >&2
+  elif has_remote_branch "$repo" "$name"; then
+    git -C "$repo" worktree add "$dest" "$name" >&2
+  elif [ -n "$base" ]; then
+    git -C "$repo" worktree add -b "$name" "$dest" "$base" >&2
+  else
+    git -C "$repo" worktree add -b "$name" "$dest" >&2
+  fi
+}
+
+copy_includes() {
+  local repo=$1 dest=$2 file=$1/.wtinclude line check
+  if [ -f "$file" ]; then
+    if [ -z "$(git -C "$repo" ls-files -- .wtinclude)" ]; then
+      ensure_ignored "$repo" ".wtinclude"
+    fi
+    while IFS= read -r line || [ -n "$line" ]; do
+      line=${line%$'\r'}
+      check=$(trim "$line")
+      case $check in
+        ''|\#*) continue ;;
+      esac
+      while :; do
+        case $line in
+          ./*) line=${line#./} ;;
+          */) line=${line%/} ;;
+          *) break ;;
+        esac
+      done
+      validate_include "$repo" "$line"
+      ensure_ignored "$repo" "$line"
+      if [ -e "$dest/$line" ]; then
+        continue
+      fi
+      mkdir -p "$dest/$(dirname "$line")"
+      cp -a "$repo/$line" "$dest/$line"
+      log "copied $line into $dest"
+    done < "$file"
+  elif [ -f "$repo/.env" ] && [ -z "$(git -C "$repo" ls-files -- .env)" ]; then
+    ensure_ignored "$repo" ".env"
+    if [ ! -e "$dest/.env" ]; then
+      cp -a "$repo/.env" "$dest/.env"
+      log "copied .env into $dest"
+    fi
+  fi
+}
+
+inside_dir() {
+  local dir
+  dir=$(cd "$1" 2>/dev/null && pwd -P) || return 1
+  case "$(pwd -P)/" in
+    "$dir"/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+pull_main() {
+  local repo=$1 default current
+  default=$(default_branch "$repo")
+  if [ -z "$default" ]; then
+    log "skip pull $repo (detached HEAD)"
+    return 0
+  fi
+  current=$(current_branch "$repo" || true)
+  if [ "$current" != "$default" ]; then
+    log "skip pull $repo (on ${current:-detached}, expected $default)"
+    return 0
+  fi
+  if [ -n "$(git -C "$repo" status --porcelain --untracked-files=no)" ]; then
+    log "skip pull $repo (uncommitted changes)"
+    return 0
+  fi
+  if [ -z "$(git -C "$repo" remote)" ]; then
+    log "skip pull $repo (no remote)"
+    return 0
+  fi
+  git -C "$repo" pull --ff-only >&2
+}
+
+plain_path() {
+  local main=$1 name=$2
+  printf '%s/.worktrees/%s-%s-%s\n' "$(dirname "$main")" "$(basename "$main")" "$(hash6 "$main")" "$(sanitize "$name")"
+}
+
+new_plain() {
+  local name=$1 main dest
+  main=$(main_root "$PWD") || die "not a git repository"
+  dest=$(plain_path "$main" "$name")
+  add_worktree "$main" "$dest" "$name"
+  copy_includes "$main" "$dest"
+  printf '%s\n' "$dest"
+}
+
+new_home() {
+  local home=$1 name=$2 dir dest base repos repo childbase
+  dir=$(wt_dir_abs)
+  mkdir -p "$dir"
+  dir=$(cd "$dir" && pwd -P)
+  dest=$dir/$(sanitize "$name")
+
+  base=$(default_branch "$home")
+  [ -n "$base" ] || base=HEAD
+  add_worktree "$home" "$dest" "$name" "$base"
+  copy_includes "$home" "$dest"
+
+  repos=$(repos_file_for "$home" "$dest") || die "no repos.txt found for $home"
+  while IFS= read -r repo || [ -n "$repo" ]; do
+    repo=$(trim "${repo%$'\r'}")
+    case $repo in
+      ''|\#*) continue ;;
+    esac
+    validate_repo "$home" "$repo"
+    ensure_ignored "$home" "$repo" "/$repo/"
+    childbase=$(default_branch "$home/$repo")
+    [ -n "$childbase" ] || childbase=HEAD
+    add_worktree "$home/$repo" "$dest/$repo" "$name" "$childbase"
+    copy_includes "$home/$repo" "$dest/$repo"
+  done < "$repos"
+
+  printf '%s\n' "$dest"
+}
+
+done_plain() {
+  local name=$1 main dest current
+  main=$(main_root "$PWD") || die "not a git repository"
+  dest=$(plain_path "$main" "$name")
+  if [ -e "$dest" ]; then
+    if inside_dir "$dest"; then
+      die "refusing to remove $dest from inside it; cd out first"
+    fi
+    check_worktree "$dest" "$name" "$main"
+    [ -z "$(git -C "$dest" status --porcelain)" ] || die "$dest has uncommitted changes"
+  fi
+  current=$(current_branch "$main" || true)
+  [ -n "$current" ] || die "main repo has a detached HEAD"
+  [ -z "$(git -C "$main" status --porcelain --untracked-files=no)" ] || die "main repo has uncommitted changes"
+
+  if branch_exists "$main" "$name"; then
+    log "merging $name into $current in $main"
+    git -C "$main" merge --no-edit "$name" >&2
+  else
+    log "branch $name already gone in $main"
+  fi
+  if [ -e "$dest" ]; then
+    git -C "$main" worktree remove --force "$dest" >&2
+  fi
+  if branch_exists "$main" "$name"; then
+    git -C "$main" branch -d "$name" >&2
+  fi
+  log "removed $name"
+}
+
+done_home() {
+  local home=$1 name=$2 dir dest repos repo child default current
+  dir=$(wt_dir_abs)
+  dest=$dir/$(sanitize "$name")
+
+  if [ -e "$dest" ]; then
+    if inside_dir "$dest"; then
+      die "refusing to remove $dest from inside it; cd out first (or run /root)"
+    fi
+    check_worktree "$dest" "$name" "$home"
+    [ -z "$(git -C "$dest" status --porcelain)" ] || die "$dest has uncommitted changes"
+  fi
+
+  default=$(default_branch "$home")
+  [ -n "$default" ] || die "cannot determine the default branch of $home"
+  current=$(current_branch "$home" || true)
+  [ "$current" = "$default" ] || die "home repo is on '${current:-detached}', expected '$default'; switch it first"
+  [ -z "$(git -C "$home" status --porcelain --untracked-files=no)" ] || die "home repo has uncommitted changes"
+
+  repos=$(repos_file_for "$home" "$dest") || die "no repos.txt found for $home"
+  while IFS= read -r repo || [ -n "$repo" ]; do
+    repo=$(trim "${repo%$'\r'}")
+    case $repo in
+      ''|\#*) continue ;;
+    esac
+    validate_repo "$home" "$repo"
+    child=$dest/$repo
+    if [ -e "$child" ]; then
+      check_worktree "$child" "$name" "$home/$repo"
+      [ -z "$(git -C "$child" status --porcelain)" ] || die "$child has uncommitted changes"
+    fi
+  done < "$repos"
+
+  if branch_exists "$home" "$name"; then
+    log "merging $name into $default in $home"
+    git -C "$home" merge --no-edit "$name" >&2
+  else
+    log "branch $name already gone in $home"
+  fi
+
+  while IFS= read -r repo || [ -n "$repo" ]; do
+    repo=$(trim "${repo%$'\r'}")
+    case $repo in
+      ''|\#*) continue ;;
+    esac
+    validate_repo "$home" "$repo"
+    child=$dest/$repo
+    if [ -e "$child" ]; then
+      git -C "$home/$repo" worktree remove --force "$child" >&2
+    fi
+    if branch_exists "$home/$repo" "$name"; then
+      git -C "$home/$repo" branch -D "$name" >&2
+    fi
+    pull_main "$home/$repo"
+  done < "$repos"
+
+  if [ -e "$dest" ]; then
+    for child in "$dest"/*; do
+      [ -e "$child" ] || continue
+      if [ -e "$child/.git" ]; then
+        die "unexpected worktree remains under $dest: $child"
+      fi
+    done
+    git -C "$home" worktree remove --force "$dest" >&2
+  fi
+  if branch_exists "$home" "$name"; then
+    git -C "$home" branch -d "$name" >&2
+  fi
+  log "removed $name"
+}
+
+cmd_new() {
+  [ "$#" -eq 1 ] || die "usage: wt new <name>"
+  validate_name "$1"
+  local home
+  if home=$(home_root); then
+    new_home "$home" "$1"
+  else
+    new_plain "$1"
+  fi
+}
+
+cmd_done() {
+  [ "$#" -eq 1 ] || die "usage: wt done <name>"
+  validate_name "$1"
+  local home
+  if home=$(home_root); then
+    done_home "$home" "$1"
+  else
+    done_plain "$1"
+  fi
+}
+
+cmd_list() {
+  local home main repos repo
+  if home=$(home_root); then
+    printf 'home %s\n' "$home"
+    git -C "$home" worktree list
+    if repos=$(repos_file_for "$home"); then
+      while IFS= read -r repo || [ -n "$repo" ]; do
+        repo=$(trim "${repo%$'\r'}")
+        case $repo in
+          ''|\#*) continue ;;
+        esac
+        case $repo in
+          *[!A-Za-z0-9._-]*)
+            log "skipping invalid repo in repos.txt: '$repo'"
+            continue
+            ;;
+        esac
+        if [ -d "$home/$repo" ] && git -C "$home/$repo" rev-parse --git-dir >/dev/null 2>&1; then
+          printf '\n%s\n' "$repo"
+          git -C "$home/$repo" worktree list
+        fi
+      done < "$repos"
+    fi
+  else
+    main=$(main_root "$PWD") || die "not a git repository"
+    git -C "$main" worktree list
+  fi
+}
+
+case ${1:-} in
+  new)
+    shift
+    cmd_new "$@"
+    ;;
+  done)
+    shift
+    cmd_done "$@"
+    ;;
+  list|ls)
+    shift
+    [ "$#" -eq 0 ] || die "usage: wt list"
+    cmd_list
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  '')
+    usage >&2
+    exit 1
+    ;;
+  *)
+    die "unknown command: $1 (try wt --help)"
+    ;;
+esac
